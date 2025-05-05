@@ -1,0 +1,180 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import ShopNavbar from '../../../Components/ShopNavbar/ShopNavbar';
+import Bgvideo from '../../../Components/background/Bgvideo';
+import Footer from '../../../Components/Footer/Footer';
+
+function ShopCard() {
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/products');
+        if (response.data.success) {
+          // Map backend products and add dynamic tags
+          const fetchedProducts = response.data.products.map((product, index) => ({
+            id: product._id,
+            image: `http://localhost:5000${product.image.url}`,
+            name: product.name,
+            description: product.description,
+            price: product.priceLKR, // Rename priceLKR to price for UI
+            discount: product.discount || 0,
+            tag: getProductTag(product, index) // Dynamically assign tag
+          }));
+          setProducts(fetchedProducts);
+        } else {
+          setError('Failed to load products');
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('An error occurred while loading products');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Dynamically assign product tags
+  const getProductTag = (product, index) => {
+    if (product.discount >= 20) return 'BESTSELLER';
+    if (index < 2) return 'NEW ARRIVAL'; // Assume first two are recent
+    return 'LIMITED EDITION';
+  };
+
+  // Format price with LKR and commas
+  const formatPrice = (price) => {
+    return `LKR ${price.toLocaleString()}`;
+  };
+
+  // Handle Buy Now button click
+  const handleBuyNow = (productName) => {
+    navigate('/payments');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
+      <Bgvideo />
+      <div className="container mx-auto px-4 py-12 flex-grow">
+        {/* Creative Header Section */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-800 mb-3">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#850FFD] to-[#DF10FD]">
+              Tech Treasures
+            </span>
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Discover innovation at your fingertips - where cutting-edge technology meets unbeatable value
+          </p>
+          <div className="mt-4">
+            <span className="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+              ⚡ Limited Time Offers
+            </span>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center items-center h-64">
+            <svg className="animate-spin h-10 w-10 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mb-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center">
+            {error}
+          </div>
+        )}
+
+        {/* Products Grid */}
+        {!isLoading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <div 
+                key={product.id} 
+                className="flex flex-col border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white"
+              >
+                {/* Product Image with Tag */}
+                <div className="relative w-full h-64">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => (e.target.src = '/fallback-image.jpg')} // Fallback for broken images
+                  />
+                  <span className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white ${
+                    product.tag === 'BESTSELLER' ? 'bg-red-500' : 
+                    product.tag === 'NEW ARRIVAL' ? 'bg-blue-500' : 
+                    'bg-purple-500'
+                  }`}>
+                    {product.tag}
+                  </span>
+                </div>
+
+                {/* Product Details */}
+                <div className="p-6 flex flex-col flex-grow">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h3>
+                    <div className="flex items-center">
+                      {product.discount > 0 && (
+                        <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
+                          SAVE {product.discount}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 mb-4 flex-grow">{product.description}</p>
+                  
+                  <div className="mt-auto">
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="text-xl font-extrabold text-gray-900">
+                        {formatPrice(product.price * (1 - product.discount / 100))}
+                      </span>
+                      {product.discount > 0 && (
+                        <span className="text-sm text-gray-500 line-through">
+                          {formatPrice(product.price)}
+                        </span>
+                      )}
+                    </div>
+                    <button 
+                      className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md"
+                      onClick={() => handleBuyNow(product.name)}
+                    >
+                      Buy Now →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Creative Footer Banner */}
+        <div className="mt-16 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 text-center border border-blue-100">
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">Need Help Choosing?</h3>
+          <p className="text-gray-600 mb-4 max-w-2xl mx-auto">
+            Our tech experts are ready to guide you to the perfect gadget for your needs.
+          </p>
+          <button className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-medium transition-colors duration-300">
+            Chat with an Expert
+          </button>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+
+export default ShopCard;
