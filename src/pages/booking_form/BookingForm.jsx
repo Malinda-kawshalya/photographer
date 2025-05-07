@@ -1,4 +1,4 @@
-  import React, { useState } from 'react';
+import React, { useState } from 'react';
   import Navbar from '../../Components/Navbar/Navbar';
   import Bgvideo from '../../Components/background/Bgvideo';
 
@@ -33,7 +33,8 @@
       setIsSubmitting(true);
 
       try {
-        const response = await fetch('http://localhost:5000/api/bookings', {
+        // First, submit the booking
+        const bookingResponse = await fetch('http://localhost:5000/api/bookings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -41,24 +42,42 @@
           body: JSON.stringify(formData)
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setSubmitSuccess(true);
-          // Reset form after successful submission
-          setFormData({
-            'full-name': '',
-            email: '',
-            organization: '',
-            'event-type': '',
-            'event-date': '',
-            'event-duration': '',
-            guests: '',
-            'venue-name': '',
-            'venue-type': '',
-            'venue-address': '',
-            'special-instructions': '',
-            terms: false
+        if (bookingResponse.ok) {
+          // If booking is successful, send confirmation email
+          const emailResponse = await fetch('http://localhost:5000/api/send-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: formData.email,
+              name: formData['full-name'],
+              eventType: formData['event-type'],
+              eventDate: formData['event-date'],
+              venueName: formData['venue-name']
+            })
           });
+
+          if (emailResponse.ok) {
+            setSubmitSuccess(true);
+            // Reset form after successful submission
+            setFormData({
+              'full-name': '',
+              email: '',
+              organization: '',
+              'event-type': '',
+              'event-date': '',
+              'event-duration': '',
+              guests: '',
+              'venue-name': '',
+              'venue-type': '',
+              'venue-address': '',
+              'special-instructions': '',
+              terms: false
+            });
+          } else {
+            console.error('Failed to send confirmation email');
+          }
         } else {
           throw new Error('Failed to submit booking');
         }

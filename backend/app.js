@@ -17,6 +17,8 @@ const userRoutes = require('./routes/userRoutes');
 const rentalRoutes = require('./routes/rentalRoutes');
 const productRoutes = require('./routes/productRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const emailRoutes = require('./routes/emailRoutes');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -99,6 +101,8 @@ app.use('/api/company-profile', companyProfileRoutes);
 app.use(rentalRoutes);
 app.use(productRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api', emailRoutes);
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {
