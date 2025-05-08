@@ -83,8 +83,6 @@ const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={['client']} />,
     children: [
       { path: '/message', element: <Message /> },
-      { path: '/shopcard', element: <ShopCard /> },
-      { path: '/rentcard', element: <RentCard /> },
       { path: '/rentdetailsform', element: <RentDetailsForm /> },
       { path: '/clientmessage', element: <ClientMessage /> },
       { path: '/payments', element: <Payment /> },
@@ -121,7 +119,6 @@ const router = createBrowserRouter([
       { path: '/rentearning', element: <RentEarning /> },
       { path: '/rentnotice', element: <RentNotice /> },
       { path: '/rentdetailsform', element: <RentDetailsForm /> },
-      { path: '/rentcard', element: <RentCard /> },
       { path: '/rentcarddetailsform', element: <RentCardDetailsForm /> },
       { path: '/rentabout', element: <RentAbout /> },
     ],
@@ -135,7 +132,6 @@ const router = createBrowserRouter([
       { path: '/shoporder', element: <ShopOrder /> },
       { path: '/shopearning', element: <ShopEarning /> },
       { path: '/shopnotice', element: <ShopNotice /> },
-      { path: '/shopcard', element: <ShopCard /> },
       { path: '/shopcarddetailsform', element: <ShopCardDetailsForm /> },
       { path: '/shop-card-details/:id', element: <ShopCardDetailsForm /> },
       { path: '/shop-card-details', element: <ShopCardDetailsForm /> },
@@ -148,6 +144,9 @@ const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={['client', 'photographer', 'rental', 'shop']} />,
     children: [
       { path: '/profile', element: <Profile /> },
+      { path: '/shopcard', element: <ShopCard /> },
+      { path: '/rentcard', element: <RentCard /> },
+
     ],
   },
 ]);

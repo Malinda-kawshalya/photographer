@@ -36,6 +36,11 @@ function ShopDashboard() {
                             <h2 className='text-xl  font-bold mb-2'>Earning</h2>
                             <p className='text-gray-600'>Track your revenue and payment history.</p>
                         </div></Link>
+
+                        <Link to="/shopcarddetailsform"><div className='glass border border-gray-300 rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow '>
+                            <h2 className='text-xl  font-bold mb-2'>Form</h2>
+                            <p className='text-gray-600'>Add your details</p>
+                        </div></Link>
                     </div>
                 </div>
 
