@@ -11,21 +11,38 @@ function Portfolio() {
   const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isOwner, setIsOwner] = useState(false); // New state to check if the viewer is the owner
 
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
+        // Check if this is the logged-in photographer viewing their own portfolio
+        const loggedInUser = JSON.parse(localStorage.getItem('user'));
+        if (loggedInUser?.role === 'photographer' && loggedInUser?.companyName === companyName) {
+          // Add edit buttons or special photographer features here
+          setIsOwner(true);
+        }
+
         const response = await axios.get(`http://localhost:5000/api/company-profile/${companyName}`);
         setPortfolio(response.data.profile);
         setLoading(false);
       } catch (err) {
-        setError(err.message);
+        if (err.response?.status === 404) {
+          setError('Portfolio not found. Please set up your portfolio first.');
+          // Redirect to portfolio form if photographer
+          const loggedInUser = JSON.parse(localStorage.getItem('user'));
+          if (loggedInUser?.role === 'photographer') {
+            navigate('/Portfoliodetailsform');
+          }
+        } else {
+          setError(err.message);
+        }
         setLoading(false);
       }
     };
 
     fetchPortfolio();
-  }, [companyName]);
+  }, [companyName, navigate]);
 
   const handleChatClick = async () => {
     try {

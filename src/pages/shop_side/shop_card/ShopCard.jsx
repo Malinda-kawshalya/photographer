@@ -9,6 +9,7 @@ function ShopCard() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   // Fetch products from backend
@@ -42,6 +43,12 @@ function ShopCard() {
     fetchProducts();
   }, []);
 
+  // Get logged in user from localStorage
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    setUser(loggedInUser);
+  }, []);
+
   // Dynamically assign product tags
   const getProductTag = (product, index) => {
     if (product.discount >= 20) return 'BESTSELLER';
@@ -57,6 +64,35 @@ function ShopCard() {
   // Handle Buy Now button click
   const handleBuyNow = (productName) => {
     navigate('/payments');
+  };
+
+  // Handle Edit Product
+  const handleEdit = async (productId) => {
+    try {
+      navigate(`/edit-product/${productId}`);
+    } catch (error) {
+      console.error('Error navigating to edit page:', error);
+    }
+  };
+
+  // Handle Delete Product
+  const handleDelete = async (productId) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        const response = await axios.delete(`http://localhost:5000/api/products/${productId}`);
+        if (response.data.success) {
+          // Remove product from state
+          setProducts(products.filter(product => product.id !== productId));
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error);
+      }
+    }
+  };
+
+  // Handle Add Product
+  const handleAddProduct = () => {
+    navigate('/add-product');
   };
 
   return (
@@ -99,66 +135,94 @@ function ShopCard() {
 
         {/* Products Grid */}
         {!isLoading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <div 
-                key={product.id} 
-                className="flex flex-col border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white"
-              >
-                {/* Product Image with Tag */}
-                <div className="relative w-full h-64">
-                  <img 
-                    src={product.image} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover"
-                    onError={(e) => (e.target.src = '/fallback-image.jpg')} // Fallback for broken images
-                  />
-                  <span className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white ${
-                    product.tag === 'BESTSELLER' ? 'bg-red-500' : 
-                    product.tag === 'NEW ARRIVAL' ? 'bg-blue-500' : 
-                    'bg-purple-500'
-                  }`}>
-                    {product.tag}
-                  </span>
-                </div>
-
-                {/* Product Details */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h3>
-                    <div className="flex items-center">
-                      {product.discount > 0 && (
-                        <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
-                          SAVE {product.discount}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-4 flex-grow">{product.description}</p>
-                  
-                  <div className="mt-auto">
-                    <div className="flex items-center gap-4 mb-4">
-                      <span className="text-xl font-extrabold text-gray-900">
-                        {formatPrice(product.price * (1 - product.discount / 100))}
-                      </span>
-                      {product.discount > 0 && (
-                        <span className="text-sm text-gray-500 line-through">
-                          {formatPrice(product.price)}
-                        </span>
-                      )}
-                    </div>
-                    <button 
-                      className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md"
-                      onClick={() => handleBuyNow(product.name)}
-                    >
-                      Buy Now →
-                    </button>
-                  </div>
-                </div>
+          <>
+            {user?.role === 'shop' && (
+              <div className="mb-8 flex justify-end">
+                <button
+                  onClick={handleAddProduct}
+                  className="bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white px-6 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity duration-300"
+                >
+                  + Add New Product
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {products.map((product) => (
+                <div 
+                  key={product.id} 
+                  className="flex flex-col border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white"
+                >
+                  {/* Product Image with Tag */}
+                  <div className="relative w-full h-64">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => (e.target.src = '/fallback-image.jpg')}
+                    />
+                    <span className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white ${
+                      product.tag === 'BESTSELLER' ? 'bg-red-500' : 
+                      product.tag === 'NEW ARRIVAL' ? 'bg-blue-500' : 
+                      'bg-purple-500'
+                    }`}>
+                      {product.tag}
+                    </span>
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h3>
+                      {user?.role === 'shop' && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(product.id)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <p className="text-gray-600 mb-4 flex-grow">{product.description}</p>
+                    
+                    <div className="mt-auto">
+                      <div className="flex items-center gap-4 mb-4">
+                        <span className="text-xl font-extrabold text-gray-900">
+                          {formatPrice(product.price * (1 - product.discount / 100))}
+                        </span>
+                        {product.discount > 0 && (
+                          <span className="text-sm text-gray-500 line-through">
+                            {formatPrice(product.price)}
+                          </span>
+                        )}
+                      </div>
+                      {user?.role !== 'shop' && (
+                        <button 
+                          className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md"
+                          onClick={() => handleBuyNow(product.name)}
+                        >
+                          Buy Now →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Creative Footer Banner */}

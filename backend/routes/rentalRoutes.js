@@ -17,5 +17,7 @@ router.post(
   rentalController.createRentalProduct
 );
 router.get('/api/rental-products', rentalController.getRentalProducts);
+router.delete('/api/rental-products/:id', authMiddleware, rentalController.deleteRentalProduct);
+router.put('/api/rental-products/:id', authMiddleware, upload.single('image'), rentalController.updateRentalProduct);
 
 module.exports = router;

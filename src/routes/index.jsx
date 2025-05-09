@@ -88,7 +88,6 @@ const router = createBrowserRouter([
       { path: '/payments', element: <Payment /> },
       { path: '/bookingform', element: <BookingForm /> },
       { path: '/chat/:chatId', element: <ChatPage /> },
-      { path: '/portfolio/:companyName', element: <Portfolio /> },
       { path: '/photographer', element: <Photographers /> },
       { path: '/shop', element: <Sellers /> },
       { path: '/rent', element: <Renters /> },
@@ -146,6 +145,8 @@ const router = createBrowserRouter([
       { path: '/profile', element: <Profile /> },
       { path: '/shopcard', element: <ShopCard /> },
       { path: '/rentcard', element: <RentCard /> },
+      { path: '/portfolio/:companyName', element: <Portfolio /> },
+
 
     ],
   },

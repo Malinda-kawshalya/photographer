@@ -14,9 +14,13 @@ function PhotographerNavbar() {
   useEffect(() => {
     const loggedInUser = JSON.parse(localStorage.getItem('user'));
     if (loggedInUser) {
+      if (!loggedInUser.companyName && loggedInUser.role === 'photographer') {
+        // If photographer hasn't set up their profile, redirect to form
+        navigate('/Portfoliodetailsform');
+      }
       setUser(loggedInUser);
     }
-  }, []);
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -67,7 +71,10 @@ function PhotographerNavbar() {
                 <Link to="/order" className="text-white transition hover:text-purple-950">
                   Orders
                 </Link>
-                <Link to="/portfolio" className="text-white transition hover:text-purple-950">
+                <Link 
+                  to={`/portfolio/${user?.companyName}`} 
+                  className="text-white transition hover:text-purple-950"
+                >
                   Portfolio
                 </Link>
                 <Link to="/earning" className="text-white transition hover:text-purple-950">
@@ -166,7 +173,7 @@ function PhotographerNavbar() {
                     Order
                   </Link>
                   <Link
-                    to="/portfolio"
+                    to={`/portfolio/${user?.companyName}`}
                     className="transition hover:text-purple"
                     onClick={toggleMobileMenu}
                   >

@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const productController = require('../controllers/productController');
 const authMiddleware = require('../middleware/auth');
+const shopAuthMiddleware = require('../middleware/shopAuthMiddleware');
 
 // Configure multer for image uploads
 const storage = multer.diskStorage({
@@ -30,9 +31,13 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-// Product routes
-router.post('/api/product', authMiddleware, upload.single('image'), productController.createProduct);
-router.get('/api/product/:id', authMiddleware, productController.getProductById);
+// Protected shop routes
+router.post('/api/products', [authMiddleware, shopAuthMiddleware], upload.single('image'), productController.createProduct);
+router.put('/api/products/:id', [authMiddleware, shopAuthMiddleware], upload.single('image'), productController.updateProduct);
+router.delete('/api/products/:id', [authMiddleware, shopAuthMiddleware], productController.deleteProduct);
+
+// Public routes
+router.get('/api/products/:id', productController.getProductById);
 router.get('/api/products', productController.getProducts);
 
 module.exports = router;

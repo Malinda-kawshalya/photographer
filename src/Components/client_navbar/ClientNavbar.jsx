@@ -95,11 +95,8 @@ function Navbar() {
             <Link to="/Aboutus" className="hover:text-purple-950 text-white transition">
               About Us
             </Link>
-            {user && dashboardLink && (
-              <Link to={dashboardLink.path} className="hover:text-purple-950 text-white transition">
-                {dashboardLink.label}
-              </Link>
-            )}
+              
+            
           </nav>
 
           {/* Mobile Menu Button */}

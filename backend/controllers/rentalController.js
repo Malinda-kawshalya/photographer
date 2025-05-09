@@ -1,6 +1,8 @@
 const Rental = require('../models/Rental');
 const RentalProduct = require('../models/RentalProduct');
 const User = require('../models/User');
+const fs = require('fs').promises;
+const path = require('path');
 
 
 const getRentals = async (req, res) => {
@@ -122,4 +124,86 @@ const getRentalProducts = async (req, res) => {
   }
 };
 
-module.exports = { createRental, getAllRentals, updateRentalStatus, createRentalProduct, getRentalProducts, getRentals };
+const updateRentalProduct = async (req, res) => {
+  try {
+    const { name, description, pricePerDay, discount } = req.body;
+    const productId = req.params.id;
+
+    const product = await RentalProduct.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    // Check if user is authorized
+    if (product.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update this product' });
+    }
+
+    // Handle image update if new image is uploaded
+    if (req.file) {
+      // Remove old image
+      const oldImagePath = path.join(__dirname, '..', product.image.url);
+      try {
+        await fs.unlink(oldImagePath);
+      } catch (err) {
+        console.error('Error deleting old image:', err);
+      }
+
+      product.image = {
+        url: `/uploads/${req.file.filename}`,
+        filename: req.file.filename
+      };
+    }
+
+    // Update other fields
+    product.name = name || product.name;
+    product.description = description || product.description;
+    product.pricePerDay = pricePerDay ? parseFloat(pricePerDay) : product.pricePerDay;
+    product.discount = discount ? parseFloat(discount) : product.discount;
+
+    await product.save();
+
+    res.json({
+      success: true,
+      message: 'Rental product updated successfully',
+      product
+    });
+  } catch (error) {
+    console.error('Error updating rental product:', error);
+    res.status(500).json({ success: false, message: 'Failed to update rental product' });
+  }
+};
+
+const deleteRentalProduct = async (req, res) => {
+  try {
+    const product = await RentalProduct.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    // Check if user is authorized
+    if (product.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete this product' });
+    }
+
+    // Delete product image
+    const imagePath = path.join(__dirname, '..', product.image.url);
+    try {
+      await fs.unlink(imagePath);
+    } catch (err) {
+      console.error('Error deleting image:', err);
+    }
+
+    await RentalProduct.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'Rental product deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting rental product:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete rental product' });
+  }
+};
+
+module.exports = { createRental, getAllRentals, updateRentalStatus, createRentalProduct, getRentalProducts, getRentals, updateRentalProduct, deleteRentalProduct };
