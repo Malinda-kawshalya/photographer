@@ -14,9 +14,19 @@ function Signin() {
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [companyLogo, setCompanyLogo] = useState(null);
+  const [district, setDistrict] = useState(''); // New state for district
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+
+  // List of 25 districts in Sri Lanka
+  const sriLankaDistricts = [
+    'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo',
+    'Galle', 'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara',
+    'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala', 'Mannar',
+    'Matale', 'Matara', 'Monaragala', 'Mullaitivu', 'Nuwara Eliya',
+    'Polonnaruwa', 'Puttalam', 'Ratnapura', 'Trincomalee', 'Vavuniya'
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +42,10 @@ function Signin() {
       formData.append('description', description);
       if (companyLogo) {
         formData.append('companyLogo', companyLogo);
+      }
+      // Add district for photographers
+      if (role === 'photographer') {
+        formData.append('district', district);
       }
     }
 
@@ -202,6 +216,29 @@ function Signin() {
                       />
                     </div>
                   </div>
+
+                  {/* New District Dropdown for Photographers */}
+                  {role === 'photographer' && (
+                    <div>
+                      <div className="bg-gray-100/10 border border-gray-500 rounded-lg flex items-center p-3">
+                        <select
+                          className="bg-transparent w-full outline-none appearance-none text-sm md:text-base"
+                          value={district}
+                          onChange={(e) => setDistrict(e.target.value)}
+                          required
+                        >
+                          <option value="" disabled className="text-black">
+                            Select District
+                          </option>
+                          {sriLankaDistricts.map((district) => (
+                            <option key={district} value={district} className="text-black">
+                              {district}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <div className="border border-gray-500 rounded-lg flex items-center p-3">
