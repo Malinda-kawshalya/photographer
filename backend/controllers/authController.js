@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
   try {
-    const { username, email, password, role, companyName, description } = req.body;
+    const { username, email, password, role, companyName, description, district } = req.body; // Add district here
     const companyLogo = req.file;
 
     if (!username || !email || !password || !role) {
@@ -28,6 +28,7 @@ const register = async (req, res) => {
       companyLogo: companyLogo
         ? { url: `/uploads/${companyLogo.filename}`, filename: companyLogo.filename }
         : undefined,
+      district: role === 'photographer' ? district : null, // Now district will be properly assigned
     });
 
     await user.save();
@@ -48,6 +49,7 @@ const register = async (req, res) => {
         companyName: user.companyName,
         description: user.description,
         companyLogo: user.companyLogo,
+        district: user.district,
       },
       token,
     });

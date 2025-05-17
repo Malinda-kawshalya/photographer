@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     location: { type: String },
     languages: { type: [String], default: [] },
     hideLocation: { type: Boolean, default: false },
+    district: { type: String },
   },
   { timestamps: true }
 );

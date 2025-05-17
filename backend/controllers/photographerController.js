@@ -3,7 +3,7 @@ const User = require("../models/User");
 const getPhotographers = async (req, res) => {
   try {
     const photographers = await User.find({ role: "photographer" }).select(
-      "username email companyName description companyLogo"
+      "username email companyName description companyLogo district"
     );
     res.json({ success: true, photographers });
   } catch (error) {
