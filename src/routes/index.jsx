@@ -38,6 +38,7 @@ import ProtectedRoute from '../Components/ProtectedRoute/ProtectedRoute.jsx';
 import StartChat from '../Components/StartChat/StartChat.jsx';
 import ChatPage from '../pages/ChatPage/ChatPage.jsx';
 import PhotographerChatsPage from '../pages/PhotographerChatsPage/PhotographerChatsPage.jsx';
+import AdminDashboard from '../pages/AdminDashboard/AdminDashboard.jsx'; 
 
 const router = createBrowserRouter([
   // Public Routes
@@ -78,19 +79,77 @@ const router = createBrowserRouter([
     element: <Login />,
   },
 
+  // Admin Routes
+  {
+    element: <ProtectedRoute allowedRoles={['admin']} />,
+    children: [
+      {
+        path: '/admin-dashboard',
+        element: <AdminDashboard />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
+      },
+    ],
+  },
+
   // Client Routes
   {
     element: <ProtectedRoute allowedRoles={['client']} />,
     children: [
-      { path: '/message', element: <Message /> },
-      { path: '/rentdetailsform', element: <RentDetailsForm /> },
-      { path: '/clientmessage', element: <ClientMessage /> },
-      { path: '/payments', element: <Payment /> },
-      { path: '/bookingform', element: <BookingForm /> },
-      { path: '/chat/:chatId', element: <ChatPage /> },
-      { path: '/photographer', element: <Photographers /> },
-      { path: '/shop', element: <Sellers /> },
-      { path: '/rent', element: <Renters /> },
+      {
+        path: '/message',
+        element: <Message />,
+      },
+      {
+        path: '/shopcard',
+        element: <ShopCard />,
+      },
+      {
+        path: '/rentcard',
+        element: <RentCard />,
+      },
+      {
+        path: '/rentdetailsform',
+        element: <RentDetailsForm />,
+      },
+      {
+        path: '/clientmessage',
+        element: <ClientMessage />,
+      },
+      {
+        path: '/payments',
+        element: <Payment />,
+      },
+      {
+        path: '/bookingform',
+        element: <BookingForm />,
+      },
+      {
+        path: '/chat/:chatId',
+        element: <ChatPage />,
+      },
+      {
+        path: '/portfolio/:companyName',
+        element: <Portfolio />,
+      },
+      {
+        path: '/photographer',
+        element: <Photographers />,
+      },
+      {
+        path: '/shop',
+        element: <Sellers />,
+      },
+      {
+        path: '/rent',
+        element: <Renters />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
+      },
     ],
   },
 
@@ -98,14 +157,42 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute allowedRoles={['photographer']} />,
     children: [
-      { path: '/dashboard', element: <Dashboard /> },
-      { path: '/photographerchats', element: <PhotographerChatsPage /> },
-      { path: '/chat/:chatId', element: <ChatPage /> },
-      { path: '/order', element: <Order /> },
-      { path: '/notice', element: <Notice /> },
-      { path: '/earning', element: <Earning /> },
-      { path: '/aboutus', element: <AboutUs /> },
-      { path: '/Portfoliodetailsform', element: <PortfolioDetailsForm /> },
+      {
+        path: '/dashboard',
+        element: <Dashboard />,
+      },
+      {
+        path: '/photographerchats',
+        element: <PhotographerChatsPage />,
+      },
+      {
+        path: '/chat/:chatId',
+        element: <ChatPage />,
+      },
+      {
+        path: '/order',
+        element: <Order />,
+      },
+      {
+        path: '/notice',
+        element: <Notice />,
+      },
+      {
+        path: '/earning',
+        element: <Earning />,
+      },
+      {
+        path: '/aboutus',
+        element: <AboutUs />,
+      },
+      {
+        path: '/Portfoliodetailsform',
+        element: <PortfolioDetailsForm />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
+      },
     ],
   },
 
@@ -113,13 +200,42 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute allowedRoles={['rental']} />,
     children: [
-      { path: '/rentdashboard', element: <RentDashboard /> },
-      { path: '/rentorder', element: <RentOrder /> },
-      { path: '/rentearning', element: <RentEarning /> },
-      { path: '/rentnotice', element: <RentNotice /> },
-      { path: '/rentdetailsform', element: <RentDetailsForm /> },
-      { path: '/rentcarddetailsform', element: <RentCardDetailsForm /> },
-      { path: '/rentabout', element: <RentAbout /> },
+      {
+        path: '/rentdashboard',
+        element: <RentDashboard />,
+      },
+      {
+        path: '/rentorder',
+        element: <RentOrder />,
+      },
+      {
+        path: '/rentearning',
+        element: <RentEarning />,
+      },
+      {
+        path: '/rentnotice',
+        element: <RentNotice />,
+      },
+      {
+        path: '/rentdetailsform',
+        element: <RentDetailsForm />,
+      },
+      {
+        path: '/rentcard',
+        element: <RentCard />,
+      },
+      {
+        path: '/rentcarddetailsform',
+        element: <RentCardDetailsForm />,
+      },
+      {
+        path: '/rentabout',
+        element: <RentAbout />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
+      },
     ],
   },
 
@@ -127,27 +243,46 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute allowedRoles={['shop']} />,
     children: [
-      { path: '/shopdashboard', element: <ShopDashboard /> },
-      { path: '/shoporder', element: <ShopOrder /> },
-      { path: '/shopearning', element: <ShopEarning /> },
-      { path: '/shopnotice', element: <ShopNotice /> },
-      { path: '/shopcarddetailsform', element: <ShopCardDetailsForm /> },
-      { path: '/shop-card-details/:id', element: <ShopCardDetailsForm /> },
-      { path: '/shop-card-details', element: <ShopCardDetailsForm /> },
-      { path: '/shopabout', element: <ShopAbout /> },
-    ],
-  },
-
-  // Shared Profile Route for all roles
-  {
-    element: <ProtectedRoute allowedRoles={['client', 'photographer', 'rental', 'shop']} />,
-    children: [
-      { path: '/profile', element: <Profile /> },
-      { path: '/shopcard', element: <ShopCard /> },
-      { path: '/rentcard', element: <RentCard /> },
-      { path: '/portfolio/:companyName', element: <Portfolio /> },
-
-
+      {
+        path: '/shopdashboard',
+        element: <ShopDashboard />,
+      },
+      {
+        path: '/shoporder',
+        element: <ShopOrder />,
+      },
+      {
+        path: '/shopearning',
+        element: <ShopEarning />,
+      },
+      {
+        path: '/shopnotice',
+        element: <ShopNotice />,
+      },
+      {
+        path: '/shopcard',
+        element: <ShopCard />,
+      },
+      {
+        path: '/shopcarddetailsform',
+        element: <ShopCardDetailsForm />,
+      },
+      {
+        path: '/shopabout',
+        element: <ShopAbout />,
+      },
+      {
+        path: '/shop-card-details/:id',
+        element: <ShopCardDetailsForm />,
+      },
+      {
+        path: '/shop-card-details',
+        element: <ShopCardDetailsForm />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
+      },
     ],
   },
 ]);
