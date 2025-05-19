@@ -38,6 +38,6 @@ router.delete('/api/products/:id', [authMiddleware, shopAuthMiddleware], product
 
 // Public routes
 router.get('/api/products/:id', productController.getProductById);
-router.get('/api/products', productController.getProducts);
+router.get('/api/products', authMiddleware, productController.getProducts);
 
 module.exports = router;

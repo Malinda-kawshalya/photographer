@@ -104,7 +104,7 @@ function Renters() {
                     {/* Contact Button */}
                     <div className="flex justify-center">
                       <Link 
-                        to='/rentcard'
+                        to={`/rentcard?providerId=${rental._id}`}
                         className="px-6 py-2 bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white rounded-lg"
                       >
                         View Services

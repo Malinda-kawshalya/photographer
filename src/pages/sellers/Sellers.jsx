@@ -102,7 +102,7 @@ useEffect(() => {
                     
                     <div className="flex justify-center">
                       <Link 
-                        to='/shopcard'
+                        to={`/shopcard?sellerId=${seller._id}`}
                         className="px-6 py-2 bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white rounded-lg"
                       >
                         View Products

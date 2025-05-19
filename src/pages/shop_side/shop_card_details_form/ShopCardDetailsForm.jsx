@@ -78,7 +78,7 @@ const ShopCardDetailsForm = () => {
         formDataToSend.append('image', formData.image);
       }
 
-      const response = await axios.post('http://localhost:5000/api/product', formDataToSend, {
+      const response = await axios.post('http://localhost:5000/api/products', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import axios from 'axios';
 import RentNavbar from '../../../Components/RentNavbar/RentNavbar';
@@ -12,38 +12,56 @@ function RentCard() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        const loggedInUser = JSON.parse(localStorage.getItem('user'));
+        setUser(loggedInUser);
+        
+        // Get providerId from URL parameters
+        const params = new URLSearchParams(location.search);
+        const providerId = params.get('providerId');
+        
+        if (!providerId && !loggedInUser?.role === 'rental') {
+          setError('No provider specified');
+          setLoading(false);
+          return;
+        }
+
         const response = await axios.get('http://localhost:5000/api/rental-products');
-        const fetchedProducts = response.data.rentalProducts.map(product => ({
-          id: product._id,
-          userId: product.userId._id, // Add this line to include userId
-          image: `http://localhost:5000${product.image.url}`,
-          name: product.name,
-          tag: product.discount > 10 ? 'PREMIUM' : product.discount > 0 ? 'POPULAR' : 'NEW',
-          description: `${product.description} (Provided by ${product.userId.companyName || 'Rental Service'})`,
-          price: product.pricePerDay,
-          discount: product.discount
-        }));
+        const fetchedProducts = response.data.rentalProducts
+          .filter(product => {
+            if (loggedInUser?.role === 'rental') {
+              return product.userId._id === loggedInUser._id;
+            }
+            return product.userId._id === providerId;
+          })
+          .map(product => ({
+            id: product._id,
+            userId: product.userId._id,
+            image: `http://localhost:5000${product.image.url}`,
+            name: product.name,
+            tag: product.discount > 10 ? 'PREMIUM' : 
+                 product.discount > 0 ? 'POPULAR' : 'NEW',
+            description: product.description,
+            price: product.pricePerDay,
+            discount: product.discount,
+            providerName: product.userId.companyName || 'Rental Service'
+          }));
+        
         setProducts(fetchedProducts);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching rental products:', err);
-        setError('Failed to load rental products. Please try again later.');
+        setError('Failed to load rental products');
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    const loggedInUser = JSON.parse(localStorage.getItem('user'));
-    console.log('Logged in user:', loggedInUser); // Debug log
-    setUser(loggedInUser);
-  }, []);
+  }, [location.search]);
 
   // Format price with LKR and commas
   const formatPrice = (price) => {
@@ -125,6 +143,14 @@ function RentCard() {
               >
                 + Add New Rental Item
               </button>
+            </div>
+          )}
+
+          {products.length > 0 && (
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-semibold text-gray-800">
+                Products by {products[0].providerName}
+              </h3>
             </div>
           )}
 
@@ -211,6 +237,13 @@ function RentCard() {
               </div>
             ))}
           </div>
+
+          {/* No products available message */}
+          {!loading && products.length === 0 && (
+            <div className="text-center text-gray-600">
+              <p>No rental products available from this provider.</p>
+            </div>
+          )}
         </div>
 
         {/* Creative Footer Banner */}
@@ -230,3 +263,6 @@ function RentCard() {
 }
 
 export default RentCard;
+
+// When linking to the RentCard page from other components:
+// <Link to={`/rentcard?providerId=${providerId}`}>View Products</Link>

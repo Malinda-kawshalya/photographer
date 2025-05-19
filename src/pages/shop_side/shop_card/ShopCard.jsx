@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import ShopNavbar from '../../../Components/ShopNavbar/ShopNavbar';
 import Bgvideo from '../../../Components/background/Bgvideo';
@@ -11,22 +11,47 @@ function ShopCard() {
   const [error, setError] = useState('');
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation(); // Add location to existing hooks
 
   // Fetch products from backend
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/products');
+        const loggedInUser = JSON.parse(localStorage.getItem('user'));
+        const token = localStorage.getItem('token'); // Get auth token
+        setUser(loggedInUser);
+        
+        // Get sellerId from URL parameters
+        const params = new URLSearchParams(location.search);
+        const sellerId = params.get('sellerId');
+        
+        // If user is shop owner, show their products, else show specific seller's products
+        const userId = loggedInUser?.role === 'shop' ? loggedInUser._id : sellerId;
+        
+        if (!userId) {
+          setError('No seller specified');
+          setIsLoading(false);
+          return;
+        }
+
+        // Add auth token to request headers
+        const response = await axios.get(`http://localhost:5000/api/products?userId=${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
         if (response.data.success) {
-          // Map backend products and add dynamic tags
-          const fetchedProducts = response.data.products.map((product, index) => ({
+          const fetchedProducts = response.data.products.map(product => ({
             id: product._id,
+            userId: product.userId._id,
             image: `http://localhost:5000${product.image.url}`,
             name: product.name,
             description: product.description,
-            price: product.priceLKR, // Rename priceLKR to price for UI
+            price: product.priceLKR,
             discount: product.discount || 0,
-            tag: getProductTag(product, index) // Dynamically assign tag
+            shopName: product.userId.companyName || 'Shop',
+            tag: getProductTag(product)
           }));
           setProducts(fetchedProducts);
         } else {
@@ -34,25 +59,24 @@ function ShopCard() {
         }
       } catch (err) {
         console.error('Error fetching products:', err);
-        setError('An error occurred while loading products');
+        if (err.response?.status === 401) {
+          setError('Please log in to view products');
+          // Optionally redirect to login
+          // navigate('/login');
+        } else {
+          setError('An error occurred while loading products');
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
-
-  // Get logged in user from localStorage
-  useEffect(() => {
-    const loggedInUser = JSON.parse(localStorage.getItem('user'));
-    setUser(loggedInUser);
-  }, []);
+  }, [location.search]); // Add location.search as dependency
 
   // Dynamically assign product tags
-  const getProductTag = (product, index) => {
+  const getProductTag = (product) => {
     if (product.discount >= 20) return 'BESTSELLER';
-    if (index < 2) return 'NEW ARRIVAL'; // Assume first two are recent
     return 'LIMITED EDITION';
   };
 
@@ -79,41 +103,50 @@ function ShopCard() {
   const handleDelete = async (productId) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await axios.delete(`http://localhost:5000/api/products/${productId}`);
+        const token = localStorage.getItem('token');
+        const response = await axios.delete(
+          `http://localhost:5000/api/products/${productId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
         if (response.data.success) {
-          // Remove product from state
           setProducts(products.filter(product => product.id !== productId));
         }
       } catch (error) {
         console.error('Error deleting product:', error);
+        if (error.response?.status === 401) {
+          setError('Please log in to delete products');
+        } else {
+          setError('Failed to delete product');
+        }
       }
     }
   };
 
   // Handle Add Product
   const handleAddProduct = () => {
-    navigate('/add-product');
+    navigate('/shopcarddetailsform');
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
       <Bgvideo />
       <div className="container mx-auto px-4 py-12 flex-grow">
-        {/* Creative Header Section */}
+        {/* Header Section */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-3">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#850FFD] to-[#DF10FD]">
-              Tech Treasures
-            </span>
-          </h2>
+          {products.length > 0 && (
+            <h2 className="text-4xl font-bold text-gray-800 mb-3">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#850FFD] to-[#DF10FD]">
+                {products[0].shopName}
+              </span>
+            </h2>
+          )}
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Discover innovation at your fingertips - where cutting-edge technology meets unbeatable value
           </p>
-          <div className="mt-4">
-            <span className="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-              ⚡ Limited Time Offers
-            </span>
-          </div>
         </div>
 
         {/* Loading State */}
@@ -163,7 +196,6 @@ function ShopCard() {
                     />
                     <span className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white ${
                       product.tag === 'BESTSELLER' ? 'bg-red-500' : 
-                      product.tag === 'NEW ARRIVAL' ? 'bg-blue-500' : 
                       'bg-purple-500'
                     }`}>
                       {product.tag}

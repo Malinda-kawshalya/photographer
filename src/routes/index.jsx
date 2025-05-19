@@ -157,6 +157,8 @@ const router = createBrowserRouter([
       { path: '/profile', element: <Profile /> },
       { path: '/shopcard', element: <ShopCard /> },
       { path: '/rentcard', element: <RentCard /> },
+      // Add a new route for provider-specific rental products
+      { path: '/rentcard/:providerId', element: <RentCard /> },
       { path: '/portfolio/:companyName', element: <Portfolio /> },
 
 

@@ -1,12 +1,24 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import logo from '../../../assets/clogo.png'
 import Footer from '../../../Components/Footer/Footer'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Bgvideo from '../../../Components/background/Bgvideo'
 import ShopNavbar from '../../../Components/ShopNavbar/ShopNavbar'
 
 
 function ShopDashboard() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    if (!loggedInUser || loggedInUser.role !== 'shop') {
+      navigate('/login');
+      return;
+    }
+    setUser(loggedInUser);
+  }, [navigate]);
+
   return (
     <div>
         <ShopNavbar/>

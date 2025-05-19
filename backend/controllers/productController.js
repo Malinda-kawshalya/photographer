@@ -59,7 +59,15 @@ const getProductById = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate('userId', 'username companyName');
+    const { userId } = req.query;
+    let query = {};
+    
+    // If userId is provided, filter products by userId
+    if (userId) {
+      query.userId = userId;
+    }
+
+    const products = await Product.find(query).populate('userId', 'username companyName');
     res.json({ success: true, products });
   } catch (error) {
     console.error('Error fetching products:', error);
