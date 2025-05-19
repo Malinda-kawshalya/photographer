@@ -6,16 +6,28 @@ import RentNavbar from '../../../Components/RentNavbar/RentNavbar';
 function RentOrder() {
   const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    setUser(loggedInUser);
+  }, []);
 
   useEffect(() => {
     const fetchRentals = async () => {
+      if (!user?._id) return;
+
       try {
-        const response = await fetch('http://localhost:5000/api/rental-transactions');
+        const response = await fetch(`http://localhost:5000/api/rental-transactions?userId=${user._id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch rentals');
         }
         const data = await response.json();
-        setRentals(data.rentals); // Make sure this matches your backend response
+        if (data.success) {
+          setRentals(data.rentals);
+        } else {
+          throw new Error(data.message || 'Failed to fetch rentals');
+        }
       } catch (error) {
         console.error('Error fetching rentals:', error);
       } finally {
@@ -23,8 +35,10 @@ function RentOrder() {
       }
     };
 
-    fetchRentals();
-  }, []);
+    if (user) {
+      fetchRentals();
+    }
+  }, [user]);
 
   const handleStatusChange = async (id, status) => {
     try {
@@ -58,6 +72,12 @@ function RentOrder() {
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  // Add debug logging
+  useEffect(() => {
+    console.log('Current user:', user);
+    console.log('Current rentals:', rentals);
+  }, [user, rentals]);
 
   return (
     <div>

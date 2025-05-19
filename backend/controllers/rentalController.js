@@ -49,11 +49,24 @@ const createRental = async (req, res) => {
 
 const getAllRentals = async (req, res) => {
   try {
-    const rentals = await Rental.find().sort({ createdAt: -1 });
-    res.json({ rentals });
+    const userId = req.query.userId;
+    let query = {};
+    
+    if (userId) {
+      query.rentalProviderId = userId;
+    }
+
+    const rentals = await Rental.find(query)
+      .sort({ createdAt: -1 })
+      .populate('rentalProviderId', 'username companyName');
+      
+    res.json({ success: true, rentals });
   } catch (error) {
     console.error('Error fetching rentals:', error);
-    res.status(500).json({ error: 'Server error while fetching rentals' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error while fetching rentals' 
+    });
   }
 };
 

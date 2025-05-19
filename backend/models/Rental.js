@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const rentalSchema = new mongoose.Schema({
+  rentalProviderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   customerDetails: {
     name: { type: String, required: true },
     email: { type: String, required: true },

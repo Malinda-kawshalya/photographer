@@ -29,7 +29,7 @@ function Portfolio() {
         setLoading(false);
       } catch (err) {
         if (err.response?.status === 404) {
-          setError('Portfolio not found. Please set up your portfolio first.');
+          setError('Portfolio not found.');
           // Redirect to portfolio form if photographer
           const loggedInUser = JSON.parse(localStorage.getItem('user'));
           if (loggedInUser?.role === 'photographer') {

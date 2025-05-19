@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Footer from '../Footer/Footer';
 import RentNavbar from '../RentNavbar/RentNavbar';
 import Bgvideo from '../background/Bgvideo';
@@ -9,6 +9,7 @@ const RentDetailsForm = () => {
   const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
+    rentalProviderId: '', // Add this field
     customerDetails: {
       name: '',
       email: '',
@@ -22,6 +23,19 @@ const RentDetailsForm = () => {
       rentalDuration: 1
     }
   });
+
+  useEffect(() => {
+    // Get rentalProviderId from URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const providerId = params.get('providerId');
+    
+    if (providerId) {
+      setFormData(prev => ({
+        ...prev,
+        rentalProviderId: providerId
+      }));
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,6 +80,11 @@ const RentDetailsForm = () => {
         }
       }
 
+      // Add this to the validation section in handleSubmit
+if (!formData.rentalProviderId) {
+  throw new Error('Rental provider ID is missing');
+}
+
       if (!formData.productDetails.rentalDuration || formData.productDetails.rentalDuration < 1) {
         throw new Error('Rental duration must be at least 1 day');
       }
@@ -77,6 +96,7 @@ const RentDetailsForm = () => {
 
       // Prepare API payload
       const payload = {
+        rentalProviderId: formData.rentalProviderId, // Include the provider ID
         customerDetails: formData.customerDetails,
         productDetails: {
           ...formData.productDetails,
@@ -92,7 +112,7 @@ const RentDetailsForm = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload) // Send payload instead of formData
       });
 
       const data = await response.json();
@@ -104,6 +124,7 @@ const RentDetailsForm = () => {
       // Success handling
       setSuccess('Rental created successfully!');
       setFormData({
+        rentalProviderId: '', // Reset this field
         customerDetails: {
           name: '',
           email: '',
@@ -127,7 +148,6 @@ const RentDetailsForm = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <RentNavbar/>
       <Bgvideo/>
       
       <div className="container mx-auto px-4 py-8 max-w-3xl">

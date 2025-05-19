@@ -197,7 +197,10 @@ function RentCard() {
                       )}
                     </div>
                     {user?.role !== 'rental' && (
-                      <Link to='/rentdetailsform'>
+                      <Link 
+                        to={`/rentdetailsform?providerId=${rental.userId}`}
+                        className="w-full md:w-auto"
+                      >
                         <button className="w-full md:w-auto bg-gradient-to-r from-[#850FFD] to-[#DF10FD] hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md">
                           Rent Now →
                         </button>

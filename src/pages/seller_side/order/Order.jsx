@@ -7,11 +7,19 @@ import PhotographerNavbar from '../../../Components/PhotographerNavbar/Photograp
 function Order() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    setUser(loggedInUser);
+  }, []);
 
   useEffect(() => {
     const fetchBookings = async () => {
+      if (!user?._id) return;
+
       try {
-        const response = await fetch('http://localhost:5000/api/bookings');
+        const response = await fetch(`http://localhost:5000/api/bookings?userId=${user._id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch bookings');
         }
@@ -25,7 +33,7 @@ function Order() {
     };
 
     fetchBookings();
-  }, []);
+  }, [user]);
 
   const handleStatusChange = async (id, status) => {
     try {

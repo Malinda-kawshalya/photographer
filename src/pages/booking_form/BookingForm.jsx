@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
   import Navbar from '../../Components/Navbar/Navbar';
   import Bgvideo from '../../Components/background/Bgvideo';
 
@@ -15,10 +15,24 @@ import React, { useState } from 'react';
       'venue-type': '',
       'venue-address': '',
       'special-instructions': '',
-      terms: false
+      terms: false,
+      photographerId: '', // Add this line
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+
+    useEffect(() => {
+      // Get photographerId from URL or props
+      const params = new URLSearchParams(window.location.search);
+      const photographerId = params.get('photographerId');
+      
+      if (photographerId) {
+        setFormData(prev => ({
+          ...prev,
+          photographerId
+        }));
+      }
+    }, []);
 
     const handleChange = (e) => {
       const { name, value, type, checked } = e.target;

@@ -17,7 +17,13 @@ const bookingSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'completed', 'cancelled'],
-    default: 'pending'}
+    default: 'pending'
+  },
+  photographerId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
+    required: true 
+  }
 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

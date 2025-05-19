@@ -15,6 +15,7 @@ const createBooking = async (req, res) => {
       "venue-address": venueAddress,
       "special-instructions": specialInstructions,
       terms,
+      photographerId, // Add this line
     } = req.body;
 
     // Validate required fields
@@ -36,6 +37,13 @@ const createBooking = async (req, res) => {
       });
     }
 
+    if (!photographerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Photographer ID is required",
+      });
+    }
+
     const newBooking = new Booking({
       fullName,
       email,
@@ -49,6 +57,7 @@ const createBooking = async (req, res) => {
       venueAddress,
       specialInstructions: specialInstructions || "",
       termsAccepted: terms === "on" || terms === true,
+      photographerId, // Add this line
     });
 
     const savedBooking = await newBooking.save();
@@ -71,7 +80,13 @@ const createBooking = async (req, res) => {
 
 const getAllBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find().sort({ createdAt: -1 });
+    const { userId } = req.query; // Get userId from query params
+
+    // If userId is provided, filter bookings by photographerId
+    const query = userId ? { photographerId: userId } : {};
+
+    const bookings = await Booking.find(query).sort({ createdAt: -1 });
+
     res.json({ success: true, bookings });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to fetch bookings" });
