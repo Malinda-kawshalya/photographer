@@ -12,6 +12,7 @@ function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isOwner, setIsOwner] = useState(false); // New state to check if the viewer is the owner
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -43,6 +44,16 @@ function Portfolio() {
 
     fetchPortfolio();
   }, [companyName, navigate]);
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    setUserRole(loggedInUser?.role || null);
+    
+    // Set isOwner if the logged-in user is the photographer who owns this portfolio
+    if (loggedInUser?.role === 'photographer' && loggedInUser?.companyName === companyName) {
+      setIsOwner(true);
+    }
+  }, [companyName]);
 
   const handleChatClick = async () => {
     try {
@@ -110,7 +121,7 @@ function Portfolio() {
 
   return (
     <div>
-      <Navbar />
+      {userRole !== 'photographer' && <Navbar />}
       <Bgvideo />
       <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-8">
@@ -221,25 +232,30 @@ function Portfolio() {
                   ))}
                 </div>
 
-                {/* Book Your Package Button */}
-                <div className="mt-8 text-center">
-                  <button
-                    onClick={() => navigate('/bookingform')}
-                    className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white font-bold py-3 px-6 rounded-lg transition duration-200 hover:from-[#EF10FD] hover:to-[#950FFD] cursor-pointer"
-                  >
-                    Book Your Package Now
-                  </button>
-                </div>
+                {/* Only show booking and chat buttons for clients */}
+                {userRole === 'client' && (
+                  <>
+                    {/* Book Your Package Button */}
+                    <div className="mt-8 text-center">
+                      <button
+                        onClick={() => navigate('/bookingform')}
+                        className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white font-bold py-3 px-6 rounded-lg transition duration-200 hover:from-[#EF10FD] hover:to-[#950FFD] cursor-pointer"
+                      >
+                        Book Your Package Now
+                      </button>
+                    </div>
 
-                {/* Chat with Photographer Button */}
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={handleChatClick}
-                    className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white font-bold py-3 px-6 rounded-lg transition duration-200 hover:from-[#EF10FD] hover:to-[#950FFD] cursor-pointer"
-                  >
-                    Chat with Photographer
-                  </button>
-                </div>
+                    {/* Chat with Photographer Button */}
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={handleChatClick}
+                        className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white font-bold py-3 px-6 rounded-lg transition duration-200 hover:from-[#EF10FD] hover:to-[#950FFD] cursor-pointer"
+                      >
+                        Chat with Photographer
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

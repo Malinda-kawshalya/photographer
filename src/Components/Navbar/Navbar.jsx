@@ -60,8 +60,7 @@ function Navbar() {
         return { path: '/shopdashboard', label: 'Shop Dashboard' };
       case 'rental':
         return { path: '/rentdashboard', label: 'Rent Dashboard' };
-      case 'client':
-        return { path: '/bookingform', label: 'Booking' };
+      
       default:
         return null;
     }
