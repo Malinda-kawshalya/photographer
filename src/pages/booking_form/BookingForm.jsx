@@ -22,16 +22,21 @@ import React, { useState, useEffect } from 'react';
     const [submitSuccess, setSubmitSuccess] = useState(false);
 
     useEffect(() => {
-      // Get photographerId from URL or props
       const params = new URLSearchParams(window.location.search);
       const photographerId = params.get('photographerId');
       
-      if (photographerId) {
-        setFormData(prev => ({
-          ...prev,
-          photographerId
-        }));
+      if (!photographerId) {
+        console.error('No photographer ID found in URL');
+        // Optionally redirect or show error
+        return;
       }
+      
+      console.log('Setting photographer ID:', photographerId);
+      
+      setFormData(prev => ({
+        ...prev,
+        photographerId
+      }));
     }, []);
 
     const handleChange = (e) => {
@@ -47,57 +52,83 @@ import React, { useState, useEffect } from 'react';
       setIsSubmitting(true);
 
       try {
-        // First, submit the booking
+        // Validate photographerId
+        if (!formData.photographerId) {
+          throw new Error('Photographer ID is missing');
+        }
+
+        // Format the data before sending
+        const bookingPayload = {
+          'full-name': formData['full-name'],
+          email: formData.email,
+          organization: formData.organization,
+          'event-type': formData['event-type'],
+          'event-date': formData['event-date'],
+          'event-duration': formData['event-duration'],
+          guests: parseInt(formData.guests),
+          'venue-name': formData['venue-name'],
+          'venue-type': formData['venue-type'],
+          'venue-address': formData['venue-address'],
+          'special-instructions': formData['special-instructions'],
+          terms: formData.terms,
+          photographerId: formData.photographerId
+        };
+
+        // Add debug logging
+        console.log('Sending booking data:', bookingPayload);
+
         const bookingResponse = await fetch('http://localhost:5000/api/bookings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify(bookingPayload)
         });
 
-        if (bookingResponse.ok) {
-          // If booking is successful, send confirmation email
-          const emailResponse = await fetch('http://localhost:5000/api/send-email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              to: formData.email,
-              name: formData['full-name'],
-              eventType: formData['event-type'],
-              eventDate: formData['event-date'],
-              venueName: formData['venue-name']
-            })
-          });
+        const responseData = await bookingResponse.json();
 
-          if (emailResponse.ok) {
-            setSubmitSuccess(true);
-            // Reset form after successful submission
-            setFormData({
-              'full-name': '',
-              email: '',
-              organization: '',
-              'event-type': '',
-              'event-date': '',
-              'event-duration': '',
-              guests: '',
-              'venue-name': '',
-              'venue-type': '',
-              'venue-address': '',
-              'special-instructions': '',
-              terms: false
-            });
-          } else {
-            console.error('Failed to send confirmation email');
-          }
+        if (!bookingResponse.ok) {
+          throw new Error(responseData.message || 'Failed to submit booking');
+        }
+
+        // If booking is successful, send confirmation email
+        const emailResponse = await fetch('http://localhost:5000/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: formData.email,
+            name: formData['full-name'],
+            eventType: formData['event-type'],
+            eventDate: formData['event-date'],
+            venueName: formData['venue-name']
+          })
+        });
+
+        if (emailResponse.ok) {
+          setSubmitSuccess(true);
+          // Reset form after successful submission
+          setFormData({
+            'full-name': '',
+            email: '',
+            organization: '',
+            'event-type': '',
+            'event-date': '',
+            'event-duration': '',
+            guests: '',
+            'venue-name': '',
+            'venue-type': '',
+            'venue-address': '',
+            'special-instructions': '',
+            terms: false
+          });
         } else {
-          throw new Error('Failed to submit booking');
+          console.error('Failed to send confirmation email');
         }
       } catch (error) {
-        console.error('Error:', error);
-        alert('Error submitting booking. Please try again.');
+        console.error('Booking error:', error);
+        alert(error.message || 'Error submitting booking. Please try again.');
       } finally {
         setIsSubmitting(false);
       }

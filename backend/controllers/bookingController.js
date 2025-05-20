@@ -2,6 +2,8 @@ const Booking = require("../models/Booking");
 
 const createBooking = async (req, res) => {
   try {
+    console.log('Received booking data:', req.body); // Add debug logging
+
     const {
       "full-name": fullName,
       email,
@@ -15,8 +17,16 @@ const createBooking = async (req, res) => {
       "venue-address": venueAddress,
       "special-instructions": specialInstructions,
       terms,
-      photographerId, // Add this line
+      photographerId,
     } = req.body;
+
+    // Validate photographer ID first
+    if (!photographerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Photographer ID is required"
+      });
+    }
 
     // Validate required fields
     if (
@@ -34,13 +44,6 @@ const createBooking = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
-      });
-    }
-
-    if (!photographerId) {
-      return res.status(400).json({
-        success: false,
-        message: "Photographer ID is required",
       });
     }
 
@@ -72,8 +75,7 @@ const createBooking = async (req, res) => {
     console.error("Error creating booking:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to create booking",
-      error: error.message,
+      message: error.message || "Failed to create booking",
     });
   }
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../Components/Navbar/Navbar';
 import Bgvideo from '../background/Bgvideo';
 import Footer from '../Footer/Footer';
@@ -235,18 +235,15 @@ function Portfolio() {
                 {/* Only show booking and chat buttons for clients */}
                 {userRole === 'client' && (
                   <>
-                    {/* Book Your Package Button */}
-                    <div className="mt-8 text-center">
-                      <button
-                        onClick={() => navigate('/bookingform')}
-                        className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white font-bold py-3 px-6 rounded-lg transition duration-200 hover:from-[#EF10FD] hover:to-[#950FFD] cursor-pointer"
-                      >
-                        Book Your Package Now
-                      </button>
-                    </div>
-
-                    {/* Chat with Photographer Button */}
-                    <div className="mt-4 text-center">
+                  <div className="mt-8 text-center">
+                    <Link 
+                      to={`/bookingform?photographerId=${portfolio.userId}`}
+                      className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
+                    >
+                      Book Your Package Now
+                    </Link>
+                  </div>
+                  <div className="mt-4 text-center">
                       <button
                         onClick={handleChatClick}
                         className="w-full bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white font-bold py-3 px-6 rounded-lg transition duration-200 hover:from-[#EF10FD] hover:to-[#950FFD] cursor-pointer"
@@ -254,7 +251,7 @@ function Portfolio() {
                         Chat with Photographer
                       </button>
                     </div>
-                  </>
+                    </>
                 )}
               </div>
             </div>
