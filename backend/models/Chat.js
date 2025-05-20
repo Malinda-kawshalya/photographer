@@ -7,12 +7,19 @@ const messageSchema = new mongoose.Schema({
 });
 
 const chatSchema = new mongoose.Schema({
-  clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  photographerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  clientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  photographerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   companyName: { type: String, required: true }, // For reference to CompanyProfile
   messages: [messageSchema],
-  createdAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
 // Index for faster lookups
 chatSchema.index({ clientId: 1, photographerId: 1 });

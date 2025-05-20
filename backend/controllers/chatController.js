@@ -134,29 +134,16 @@ const sendMessage = async (req, res) => {
 
 const getPhotographerChats = async (req, res) => {
   try {
-    const photographerId = req.user.userId; // From authMiddleware
-
-    // Fetch all chats where the photographerId matches
+    const photographerId = req.user.userId;
     const chats = await Chat.find({ photographerId })
-      .select('clientId companyName messages createdAt')
-      .populate('clientId', 'name email') // Populate client details (adjust fields as needed)
-      .lean();
-
-    if (!chats || chats.length === 0) {
-      return res.status(200).json({ success: true, chats: [], message: 'No chats found' });
-    }
-
-    // Optionally, sort chats by the latest message or creation date
-    chats.sort((a, b) => {
-      const lastMessageA = a.messages.length > 0 ? a.messages[a.messages.length - 1].timestamp : a.createdAt;
-      const lastMessageB = b.messages.length > 0 ? b.messages[b.messages.length - 1].timestamp : b.createdAt;
-      return lastMessageB - lastMessageA; // Sort descending (most recent first)
-    });
+      .populate('clientId', 'name email') // Add this populate to get client details
+      .populate('messages')
+      .sort({ updatedAt: -1 });
 
     res.json({ success: true, chats });
   } catch (error) {
-    console.error('Get photographer chats error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch chats', details: error.message });
+    console.error('Error fetching chats:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch chats' });
   }
 };
 

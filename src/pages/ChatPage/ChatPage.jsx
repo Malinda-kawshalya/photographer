@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { FaPaperPlane } from 'react-icons/fa';
+import axios from 'axios';
+import PhotographerNavbar from '../../Components/PhotographerNavbar/PhotographerNavbar';
+import Bgvideo from '../../Components/background/Bgvideo';
+import { FaUser, FaPaperPlane } from 'react-icons/fa';
 
 function ChatPage() {
   const { chatId } = useParams();
   const [chat, setChat] = useState(null);
-  const [message, setMessage] = useState('');
+  const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    setUser(loggedInUser);
+  }, []);
 
   useEffect(() => {
     const fetchChat = async () => {
@@ -16,38 +30,52 @@ function ChatPage() {
         const response = await axios.get(`http://localhost:5000/api/chats/${chatId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (response.data.success) {
           setChat(response.data.chat);
-        } else {
-          setError(response.data.error);
         }
       } catch (err) {
-        setError('Failed to fetch chat');
+        setError('Failed to load chat');
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchChat();
+    // Set up periodic refresh
+    const interval = setInterval(fetchChat, 5000);
+    return () => clearInterval(interval);
   }, [chatId]);
 
-  const handleSendMessage = async () => {
+  useEffect(() => {
+    scrollToBottom();
+  }, [chat?.messages]);
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+
     try {
       const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user'));
-      const sender = user.role === 'photographer' ? 'photographer' : 'client';
       const response = await axios.post(
         `http://localhost:5000/api/chats/${chatId}/messages`,
-        { content: message, sender },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          content: newMessage,
+          sender: user?.role === 'photographer' ? 'photographer' : 'client',
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       if (response.data.success) {
-        setChat((prev) => ({
-          ...prev,
-          messages: [...prev.messages, response.data.message],
+        setNewMessage('');
+        // Update chat with new message
+        setChat((prevChat) => ({
+          ...prevChat,
+          messages: [...prevChat.messages, response.data.message],
         }));
-        setMessage('');
-      } else {
-        setError(response.data.error);
       }
     } catch (err) {
       setError('Failed to send message');
@@ -55,48 +83,67 @@ function ChatPage() {
     }
   };
 
-  if (!chat) return <div className="p-4">Loading...</div>;
+  if (loading) {
+    return <div className="p-4 text-center">Loading chat...</div>;
+  }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">Chat with {chat.companyName}</h2>
-      <div className="border rounded-lg h-96 overflow-y-auto p-4 mb-4 bg-gray-50">
-        {chat.messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`mb-2 flex ${
-              msg.sender === 'client' ? 'justify-end' : 'justify-start'
-            }`}
-          >
+    <div className="min-h-screen bg-gray-100">
+      <PhotographerNavbar />
+      <Bgvideo />
+
+      <div className="max-w-4xl mx-auto p-4 mt-8 bg-white rounded-lg shadow-lg">
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+
+        <div className="mb-4 p-4 border-b">
+          <h2 className="text-xl font-semibold">Chat with {chat?.companyName}</h2>
+        </div>
+
+        <div className="h-[60vh] overflow-y-auto mb-4 p-4">
+          {chat?.messages.map((message, index) => (
             <div
-              className={`inline-block p-2 rounded-lg ${
-                msg.sender === 'client' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'
+              key={index}
+              className={`flex mb-4 ${
+                message.sender === user?.role ? 'justify-end' : 'justify-start'
               }`}
             >
-              <span className="font-bold">{msg.sender}: </span>
-              <span>{msg.content}</span>
-              <div className="text-xs text-gray-500 mt-1">
-                {new Date(msg.timestamp).toLocaleTimeString()}
+              <div
+                className={`max-w-[70%] p-3 rounded-lg ${
+                  message.sender === user?.role
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-800'
+                }`}
+              >
+                <div className="flex items-center mb-1">
+                  <FaUser className="mr-2" />
+                  <span className="font-medium">{message.sender}</span>
+                </div>
+                <p>{message.content}</p>
+                <span className="text-xs opacity-75">
+                  {new Date(message.timestamp).toLocaleString()}
+                </span>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-      {error && <p className="text-red-500 mb-2">{error}</p>}
-      <div className="flex">
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          className="flex-grow border p-2 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-purple-500"
-          placeholder="Type a message..."
-        />
-        <button
-          onClick={handleSendMessage}
-          className="bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-white px-4 py-2 rounded-r-lg hover:opacity-90"
-        >
-          <FaPaperPlane />
-        </button>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSendMessage} className="flex gap-2">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <button
+            type="submit"
+            disabled={!newMessage.trim()}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FaPaperPlane className="w-5 h-5" />
+          </button>
+        </form>
       </div>
     </div>
   );

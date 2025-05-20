@@ -39,6 +39,7 @@ import StartChat from '../Components/StartChat/StartChat.jsx';
 import ChatPage from '../pages/ChatPage/ChatPage.jsx';
 import PhotographerChatsPage from '../pages/PhotographerChatsPage/PhotographerChatsPage.jsx';
 import AdminDashboard from '../pages/AdminDashboard/AdminDashboard.jsx';
+import ChatRoom from '../pages/ChatRoom/ChatRoom.jsx';
 
 const router = createBrowserRouter([
   // Public Routes
@@ -100,8 +101,8 @@ const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={['photographer']} />,
     children: [
       { path: '/dashboard', element: <Dashboard /> },
-      { path: '/photographerchats', element: <PhotographerChatsPage /> },
-      { path: '/chat/:chatId', element: <ChatPage /> },
+      { path: '/chats', element: <PhotographerChatsPage /> },
+      { path: '/chat-room/:chatId', element: <ChatRoom /> },
       { path: '/order', element: <Order /> },
       { path: '/notice', element: <Notice /> },
       { path: '/earning', element: <Earning /> },

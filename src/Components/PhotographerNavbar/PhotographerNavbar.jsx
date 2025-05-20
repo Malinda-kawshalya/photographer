@@ -100,7 +100,7 @@ function PhotographerNavbar() {
 
           {/* Desktop Icons */}
           <div className="items-center hidden space-x-6 md:flex">
-            <Link to="/photographerchats" className="text-white transition hover:text-purple-950">
+            <Link to="/chats" className="text-white transition hover:text-purple-950">
               <FaMessage size={20} />
             </Link>
 
