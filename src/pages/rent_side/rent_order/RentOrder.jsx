@@ -7,6 +7,7 @@ function RentOrder() {
   const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(null); // Add this state
 
   useEffect(() => {
     const loggedInUser = JSON.parse(localStorage.getItem('user'));
@@ -42,23 +43,51 @@ function RentOrder() {
 
   const handleStatusChange = async (id, status) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/rentals/${id}`, {
+      setUpdatingStatus(id);
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Optimistically update the UI first
+      setRentals(prevRentals => 
+        prevRentals.map(rental => 
+          rental._id === id ? { ...rental, status } : rental
+        )
+      );
+
+      const response = await fetch(`http://localhost:5000/api/rental-transactions/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to update rental status');
+        // Revert the optimistic update if the server request failed
+        setRentals(prevRentals => 
+          prevRentals.map(rental => 
+            rental._id === id ? { ...rental, status: rental.status } : rental
+          )
+        );
+        throw new Error(data.message || 'Failed to update rental status');
       }
 
-      setRentals(rentals.map(rental => 
-        rental._id === id ? { ...rental, status } : rental
-      ));
+      // No need to update state again since we already did it optimistically
+      
     } catch (error) {
       console.error('Error updating rental status:', error);
+      // Show error message without blocking UI update
+      setTimeout(() => {
+        alert(error.message || 'Failed to update status. Please try again.');
+      }, 100);
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -78,6 +107,21 @@ function RentOrder() {
     console.log('Current user:', user);
     console.log('Current rentals:', rentals);
   }, [user, rentals]);
+
+  const StatusBadge = ({ status }) => {
+    const statusStyles = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      active: 'bg-blue-100 text-blue-800',
+      completed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800'
+    };
+
+    return (
+      <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusStyles[status] || statusStyles.pending}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
 
   return (
     <div>
@@ -148,13 +192,7 @@ function RentOrder() {
                     </div>
                     <div>
                       <span className="font-medium text-black">Status: </span>
-                      <span className={`font-semibold ${
-                        rental.status === 'completed' ? 'text-green-600' : 
-                        rental.status === 'cancelled' ? 'text-red-600' : 
-                        rental.status === 'active' ? 'text-blue-600' : 'text-yellow-400'
-                      }`}>
-                        {rental.status || 'pending'}
-                      </span>
+                      <StatusBadge status={rental.status || 'pending'} />
                     </div>
                   </div>
 
@@ -162,26 +200,45 @@ function RentOrder() {
                     {rental.status === 'pending' && (
                       <button
                         onClick={() => handleStatusChange(rental._id, 'active')}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors"
+                        disabled={updatingStatus === rental._id}
+                        className={`flex-1 ${
+                          updatingStatus === rental._id 
+                            ? 'bg-blue-400 cursor-not-allowed' 
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        } text-white py-2 px-4 rounded transition-colors flex items-center justify-center`}
                       >
-                        Activate
+                        <span>{updatingStatus === rental._id ? 'Updating...' : 'Activate'}</span>
                       </button>
                     )}
-                    {rental.status !== 'completed' && rental.status !== 'cancelled' && (
-                      <>
-                        <button
-                          onClick={() => handleStatusChange(rental._id, 'completed')}
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
-                        >
-                          Complete
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange(rental._id, 'cancelled')}
-                          className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </>
+                    
+                    {rental.status === 'active' && (
+                      <button
+                        onClick={() => handleStatusChange(rental._id, 'completed')}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors flex items-center justify-center"
+                      >
+                        <span>Complete</span>
+                      </button>
+                    )}
+                    
+                    {(rental.status === 'pending' || rental.status === 'active') && (
+                      <button
+                        onClick={() => handleStatusChange(rental._id, 'cancelled')}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors flex items-center justify-center"
+                      >
+                        <span>Cancel</span>
+                      </button>
+                    )}
+                    
+                    {rental.status === 'completed' && (
+                      <div className="flex-1 bg-green-100 text-green-800 py-2 px-4 rounded text-center">
+                        Completed
+                      </div>
+                    )}
+                    
+                    {rental.status === 'cancelled' && (
+                      <div className="flex-1 bg-red-100 text-red-800 py-2 px-4 rounded text-center">
+                        Cancelled
+                      </div>
                     )}
                   </div>
                 </div>
