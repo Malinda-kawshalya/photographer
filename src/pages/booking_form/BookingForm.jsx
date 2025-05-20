@@ -106,6 +106,9 @@ import React, { useState, useEffect } from 'react';
           })
         });
 
+          const emailData = await emailResponse.json();
+
+
         if (emailResponse.ok) {
           setSubmitSuccess(true);
           // Reset form after successful submission

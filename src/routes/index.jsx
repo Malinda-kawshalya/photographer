@@ -26,7 +26,7 @@ import RentNotice from '../pages/rent_side/rent_notice/RentNotice.jsx';
 import ShopCardDetailsForm from '../pages/shop_side/shop_card_details_form/ShopCardDetailsForm.jsx';
 import RentCardDetailsForm from '../pages/rent_side/rent_card_details_form/RentCardDetailsForm.jsx';
 import ShopAbout from '../pages/shop_side/shop_about/ShopAbout.jsx';
-import AboutUs from '../pages/seller_side/aboutus/AboutUs.jsx';
+import AboutUs from '../pages/seller_side/aboutus/SellerAbout.jsx';
 import Portfolio from '../Components/portfolio/Portfolio.jsx';
 import RentAbout from '../pages/rent_side/rent_about/RentAbout.jsx';
 import RentCard from '../pages/rent_side/rent_card/RentCard.jsx';
@@ -105,7 +105,7 @@ const router = createBrowserRouter([
       { path: '/order', element: <Order /> },
       { path: '/notice', element: <Notice /> },
       { path: '/earning', element: <Earning /> },
-      { path: '/aboutus', element: <AboutUs /> },
+      { path: '/sellerabout', element: <AboutUs /> },
       { path: '/Portfoliodetailsform', element: <PortfolioDetailsForm /> },
     ],
   },

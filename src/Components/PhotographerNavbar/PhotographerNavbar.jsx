@@ -83,7 +83,7 @@ function PhotographerNavbar() {
                 <Link to="/notice" className="text-white transition hover:text-purple-950">
                   Notice
                 </Link>
-                <Link to="/aboutus" className="text-white transition hover:text-purple-950">
+                <Link to="/sellerabout" className="text-white transition hover:text-purple-950">
                   About Us
                 </Link>
               </>

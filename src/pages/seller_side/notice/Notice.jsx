@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ClientNavbar from '../../../Components/client_navbar/ClientNavbar';
+import PhotographerNavbar from '../../../Components/PhotographerNavbar/PhotographerNavbar';
 import Footer from '../../../Components/Footer/Footer';
 import Bgvideo from '../../../Components/background/Bgvideo';
 
@@ -36,7 +36,7 @@ function Notice() {
 
   return (
     <div>
-      <ClientNavbar />        
+      <PhotographerNavbar />        
       <Bgvideo />
       <div className='flex-grow container mx-auto px-6 py-8 bg-white'>
         <div className='mb-8'>

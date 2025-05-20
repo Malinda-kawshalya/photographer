@@ -10,8 +10,10 @@ function AboutUs() {
     <div>
         <PhotographerNavbar/>
         <Bgvideo/>
-        <About/>
-        <Footer/>
+                <About/>     
+                   <Footer/>
+
+
     </div>
   )
 }

@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-// Create a transporter using your email service credentials
+// Create a transporter using environment variables
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // or your preferred email service
+  service: 'gmail',
   auth: {
-    user: 'your-email@gmail.com',
-    pass: 'your-app-specific-password'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -15,7 +16,7 @@ router.post('/send-email', async (req, res) => {
   const { to, name, eventType, eventDate, venueName } = req.body;
 
   const mailOptions = {
-    from: 'your-email@gmail.com',
+    from: process.env.EMAIL_USER,
     to: to,
     subject: 'Booking Confirmation - Photography Services',
     html: `
@@ -34,10 +35,10 @@ router.post('/send-email', async (req, res) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: 'Email sent successfully' });
+    res.status(200).json({ success: true, message: 'Email sent successfully' });
   } catch (error) {
     console.error('Error sending email:', error);
-    res.status(500).json({ error: 'Failed to send email' });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

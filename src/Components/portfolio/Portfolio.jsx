@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../Components/Navbar/Navbar';
+import PhotographerNavbar from '../PhotographerNavbar/PhotographerNavbar';
 import Bgvideo from '../background/Bgvideo';
 import Footer from '../Footer/Footer';
 import axios from 'axios';
@@ -121,7 +122,7 @@ function Portfolio() {
 
   return (
     <div>
-      {userRole !== 'photographer' && <Navbar />}
+    {userRole === 'photographer' ? <PhotographerNavbar /> : <Navbar />}
       <Bgvideo />
       <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-8">
