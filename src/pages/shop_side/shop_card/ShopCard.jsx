@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import ShopNavbar from '../../../Components/ShopNavbar/ShopNavbar';
+import ClientNavbar from '../../../Components/client_navbar/ClientNavbar'; // Add this import
+
 import Bgvideo from '../../../Components/background/Bgvideo';
 import Footer from '../../../Components/Footer/Footer';
 
@@ -133,6 +135,8 @@ function ShopCard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
+          {user?.role === 'shop' ? <ShopNavbar /> : <ClientNavbar />}
+
       <Bgvideo />
       <div className="container mx-auto px-4 py-12 flex-grow">
         {/* Header Section */}

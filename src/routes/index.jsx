@@ -133,9 +133,12 @@ const router = createBrowserRouter([
       { path: '/shopearning', element: <ShopEarning /> },
       { path: '/shopnotice', element: <ShopNotice /> },
       { path: '/shopcarddetailsform', element: <ShopCardDetailsForm /> },
+      { path: '/shopcarddetailsform/:id', element: <ShopCardDetailsForm /> }, // Add this route
+      // Update these routes for editing products
       { path: '/shop-card-details/:id', element: <ShopCardDetailsForm /> },
       { path: '/shop-card-details', element: <ShopCardDetailsForm /> },
       { path: '/shopabout', element: <ShopAbout /> },
+      { path: '/shopcard', element: <ShopCard /> },
     ],
   },
 

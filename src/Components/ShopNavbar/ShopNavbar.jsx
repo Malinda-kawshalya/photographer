@@ -74,9 +74,7 @@ function ShopNavbar() {
 
           {/* Desktop Icons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/message" className="text-white transition hover:text-purple-950">
-              <FaMessage size={20} />
-            </Link>
+            
             <div className="relative text-white transition hover:text-purple-950">
               <FaBell size={20} />
               <span className="absolute top-[-4px] right-[-4px] w-4 h-4 bg-red-500 text-xs rounded-full text-white flex items-center justify-center">3</span>

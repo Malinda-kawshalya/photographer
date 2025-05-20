@@ -87,7 +87,10 @@ const ShopCardDetailsForm = () => {
 
       if (response.data.success) {
         setSuccess('Product saved successfully!');
-        setTimeout(() => navigate('/dashboard'), 2000);
+        // Changed redirect destination and increased timeout
+        setTimeout(() => {
+          navigate('/shopcard'); // Changed from /dashboard to /shopcard
+        }, 3000); // Increased from 2000 to 3000ms
       } else {
         setError(response.data.message || 'Failed to save product');
       }
