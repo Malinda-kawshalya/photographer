@@ -137,19 +137,43 @@ const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Product not found' 
+      });
     }
 
-    // Check if user is authorized (shop owner)
-    if (product.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to delete this product' });
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
     }
 
-    // Delete product image
-    try {
-      await fs.unlink(path.join(__dirname, '..', product.image.url));
-    } catch (unlinkError) {
-      console.error('Error deleting product image:', unlinkError);
+    // Convert both IDs to strings for comparison
+    const productUserId = product.userId.toString();
+    const requestUserId = req.user._id.toString();
+
+    // Debug log to check IDs
+    console.log('Product User ID:', productUserId);
+    console.log('Request User ID:', requestUserId);
+
+    if (productUserId !== requestUserId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to delete this product'
+      });
+    }
+
+    // Delete product image if it exists
+    if (product.image && product.image.url) {
+      try {
+        const imagePath = path.join(__dirname, '..', product.image.url);
+        await fs.unlink(imagePath);
+      } catch (unlinkError) {
+        console.error('Error deleting product image:', unlinkError);
+      }
     }
 
     // Delete product from database
@@ -161,7 +185,11 @@ const deleteProduct = async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting product:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete product' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to delete product',
+      error: error.message 
+    });
   }
 };
 

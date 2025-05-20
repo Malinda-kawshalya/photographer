@@ -95,39 +95,47 @@ function ShopCard() {
   // Handle Edit Product
   const handleEdit = async (productId) => {
     try {
-      navigate(`/edit-product/${productId}`);
+      navigate(`/shopcarddetailsform/${productId}`);
     } catch (error) {
       console.error('Error navigating to edit page:', error);
+      setError('Failed to navigate to edit page');
     }
   };
 
   // Handle Delete Product
-  const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.delete(
-          `http://localhost:5000/api/products/${productId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        if (response.data.success) {
-          setProducts(products.filter(product => product.id !== productId));
-        }
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        if (error.response?.status === 401) {
-          setError('Please log in to delete products');
-        } else {
-          setError('Failed to delete product');
-        }
+  // filepath: d:\MY PROJECTS\photographer\src\pages\shop_side\shop_card\ShopCard.jsx
+const handleDelete = async (productId) => {
+  if (window.confirm('Are you sure you want to delete this product?')) {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setError('Please log in to delete products');
+        return;
       }
-    }
-  };
 
+      const response = await axios.delete(
+        `http://localhost:5000/api/products/${productId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setProducts(prevProducts => prevProducts.filter(product => product.id !== productId));
+        // Optionally show success message
+        setError(''); // Clear any existing errors
+      } else {
+        throw new Error(response.data.message || 'Failed to delete product');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      setError(error.response?.data?.message || 'Failed to delete product');
+    }
+  }
+};
   // Handle Add Product
   const handleAddProduct = () => {
     navigate('/shopcarddetailsform');

@@ -34,12 +34,17 @@ const register = async (req, res) => {
     await user.save();
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || 'your_jwt_secret',
-      { expiresIn: '1d' }
+      { 
+        userId: user._id, 
+        role: user.role,
+        username: user.username 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
     );
 
     res.status(201).json({
+      success: true,
       message: 'User registered successfully',
       user: {
         _id: user._id,
@@ -49,13 +54,16 @@ const register = async (req, res) => {
         companyName: user.companyName,
         description: user.description,
         companyLogo: user.companyLogo,
-        district: user.district,
+        district: user.district
       },
-      token,
+      token
     });
   } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ error: 'Server error while registering user' });
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error while registering user' 
+    });
   }
 };
 
@@ -65,21 +73,32 @@ const login = async (req, res) => {
 
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid username or password' 
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid username or password' 
+      });
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || 'your_jwt_secret',
-      { expiresIn: '1d' }
+      { 
+        userId: user._id, 
+        role: user.role,
+        username: user.username 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
     );
 
     res.json({
+      success: true,
       message: 'Login successful',
       user: {
         _id: user._id,
@@ -89,12 +108,16 @@ const login = async (req, res) => {
         companyName: user.companyName,
         description: user.description,
         companyLogo: user.companyLogo,
+        district: user.district
       },
-      token,
+      token
     });
   } catch (error) {
-    console.error('Error logging in:', error);
-    res.status(500).json({ message: 'Server error while logging in' });
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error while logging in' 
+    });
   }
 };
 

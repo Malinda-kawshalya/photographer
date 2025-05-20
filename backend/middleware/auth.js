@@ -3,36 +3,32 @@ const User = require('../models/User');
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // Get token from header
-    const authHeader = req.header('Authorization');
+    const token = req.header('Authorization')?.replace('Bearer ', '');
     
-    // Check if no token
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ success: false, error: 'No token provided' });
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'No authentication token found' 
+      });
     }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    const token = authHeader.split(' ')[1];
-    
-    try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Add user from payload
-      req.user = decoded;
-      
-      // Optional: Check if user still exists in DB
-      const user = await User.findById(decoded.userId).select('-password');
-      if (!user) {
-        return res.status(401).json({ success: false, error: 'User not found' });
-      }
-      
-      next();
-    } catch (err) {
-      res.status(401).json({ success: false, error: 'Token is not valid' });
+    // Find user by ID from decoded token
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      throw new Error('User not found');
     }
-  } catch (err) {
-    console.error('Auth middleware error:', err);
-    res.status(500).json({ success: false, error: 'Server Error' });
+
+    // Attach the full user object to the request
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(401).json({ 
+      success: false, 
+      message: 'Please authenticate' 
+    });
   }
 };
 
