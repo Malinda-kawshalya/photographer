@@ -66,16 +66,16 @@ function ShopDashboard() {
                             </div>
 
                             <h2 className='text-xl  font-bold'>Chopsy events</h2>
-                            <button className='mt-4  text-white px-4 py-2 rounded-md bg-gradient-to-r from-[#850FFD] to-[#DF10FD]'>View Profile</button>
+                            <Link to='/profile'><button className='mt-4 cursor-pointer text-white px-4 py-2 rounded-md bg-gradient-to-r from-[#850FFD] to-[#DF10FD]'>View Profile</button></Link>
                         </div>
 
                         <div className='border-t border-purple-400 pt-4 mb-6' >
-                            <h3 className='font-bold text-white mb-2'>My level - level 2</h3>
+                            <h3 className='font-bold text-gray-800 mb-2'>My level - level 2</h3>
                             <p className='mb-1 text-gray-600'>Completed project - 82</p>
                         </div>
 
                         <div className='border-t border-gpurpleay-400 pt-4'>
-                            <h3 className='font-bold text-white mb-2'>
+                            <h3 className='font-bold text-gray-800 mb-2'>
                                Upcoming Event</h3>
                                 <p className='text-gray-600'>Event in November </p>
                                 <p className='text-2xl font-bold text-purple-800'>15</p>

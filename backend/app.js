@@ -5,7 +5,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 const Chat = require('./models/Chat');
-const multer = require('multer'); // Add multer import
+const multer = require('multer');
 const fs = require('fs');
 require('dotenv').config();
 
@@ -17,14 +17,14 @@ const userRoutes = require('./routes/userRoutes');
 const rentalRoutes = require('./routes/rentalRoutes');
 const productRoutes = require('./routes/productRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const emailRoutes = require('./routes/emailRoutes');
-
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -32,12 +32,12 @@ const io = new Server(server, {
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], credentials: true }));
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'Uploads');
-if (!fs.existsSync(uploadsDir)){
-    fs.mkdirSync(uploadsDir, { recursive: true });
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 // Serve static files - make sure path is consistent with your code
@@ -54,13 +54,11 @@ mongoose
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // Join chat room
   socket.on('joinChat', (chatId) => {
     socket.join(chatId);
     console.log(`User joined chat: ${chatId}`);
   });
 
-  // Handle new message
   socket.on('sendMessage', async ({ chatId, userId, content }) => {
     try {
       const chat = await Chat.findById(chatId);
@@ -95,14 +93,14 @@ io.on('connection', (socket) => {
 
 // Mount routes
 app.use(authRoutes);
-app.use(userRoutes);
+app.use('/api', userRoutes); // Changed to mount under /api
 app.use(bookingRoutes);
 app.use('/api/company-profile', companyProfileRoutes);
 app.use(rentalRoutes);
 app.use(productRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/orders', orderRoutes);
 app.use('/api', emailRoutes);
-
 
 // Health check endpoint
 app.get('/health', (req, res) => {

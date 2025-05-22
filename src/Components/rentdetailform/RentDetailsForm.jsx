@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Footer from '../Footer/Footer';
 import RentNavbar from '../RentNavbar/RentNavbar';
 import Bgvideo from '../background/Bgvideo';
+import Navbar from "../../Components/Navbar/Navbar";
 
 const RentDetailsForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,7 +10,7 @@ const RentDetailsForm = () => {
   const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
-    rentalProviderId: '', // Add this field
+    rentalProviderId: '', // Provider ID from URL
     customerDetails: {
       name: '',
       email: '',
@@ -20,19 +21,31 @@ const RentDetailsForm = () => {
       name: '',
       quantity: 1,
       rentDate: '',
-      rentalDuration: 1
-    }
+      rentalDuration: 1,
+      price: 15000
+    },
   });
 
   useEffect(() => {
-    // Get rentalProviderId from URL parameters
+    // Get parameters from URL
     const params = new URLSearchParams(window.location.search);
     const providerId = params.get('providerId');
+    const price = params.get('price');
+    
+    const updates = {};
     
     if (providerId) {
+      updates.rentalProviderId = providerId;
+    }
+    
+    if (price) {
+      updates.price = Number(price) || 15000; // Use price from URL or default
+    }
+    
+    if (Object.keys(updates).length > 0) {
       setFormData(prev => ({
         ...prev,
-        rentalProviderId: providerId
+        ...updates
       }));
     }
   }, []);
@@ -80,13 +93,18 @@ const RentDetailsForm = () => {
         }
       }
 
-      // Add this to the validation section in handleSubmit
-if (!formData.rentalProviderId) {
-  throw new Error('Rental provider ID is missing');
-}
+      // Validate rental provider ID
+      if (!formData.rentalProviderId) {
+        throw new Error('Rental provider ID is missing');
+      }
 
       if (!formData.productDetails.rentalDuration || formData.productDetails.rentalDuration < 1) {
         throw new Error('Rental duration must be at least 1 day');
+      }
+
+      // Validate price
+      if (!formData.price || formData.price < 1000) {
+        throw new Error('Price must be at least 1000 LKR');
       }
 
       // Calculate dates
@@ -96,14 +114,16 @@ if (!formData.rentalProviderId) {
 
       // Prepare API payload
       const payload = {
-        rentalProviderId: formData.rentalProviderId, // Include the provider ID
+        rentalProviderId: formData.rentalProviderId,
         customerDetails: formData.customerDetails,
         productDetails: {
-          ...formData.productDetails,
+          name: formData.productDetails.name,
+          quantity: parseInt(formData.productDetails.quantity),
           rentDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
-          quantity: parseInt(formData.productDetails.quantity)
-        }
+          rentalDuration: parseInt(formData.productDetails.rentalDuration),
+          price: parseFloat(formData.price),
+          endDate: endDate.toISOString()
+        },
       };
 
       // API call
@@ -112,7 +132,7 @@ if (!formData.rentalProviderId) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload) // Send payload instead of formData
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -135,8 +155,10 @@ if (!formData.rentalProviderId) {
           name: '',
           quantity: 1,
           rentDate: '',
-          rentalDuration: 1
-        }
+          rentalDuration: 1,
+          price: 15000
+        },
+      // Reset price
       });
 
     } catch (err) {
@@ -148,6 +170,7 @@ if (!formData.rentalProviderId) {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Navbar/>
       <Bgvideo/>
       
       <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -323,6 +346,23 @@ if (!formData.rentalProviderId) {
                     onChange={handleChange}
                     min="1"
                     max="30"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 disabled:bg-gray-100"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                {/* Total Price field (now at root level) */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    Total Price (LKR) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    min="1000"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 disabled:bg-gray-100"
                     required
                     disabled={isLoading}

@@ -20,8 +20,17 @@ const authMiddleware = async (req, res, next) => {
       throw new Error('User not found');
     }
 
-    // Attach the full user object to the request
-    req.user = user;
+    // Attach the full user object and decoded token data to the request
+    req.user = {
+      ...decoded,
+      _id: user._id,  // This is important for compatibility with existing code
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      companyName: user.companyName,
+      description: user.description,
+      companyLogo: user.companyLogo
+    };
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

@@ -16,13 +16,17 @@ const bookingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   status: {
     type: String,
-    enum: ['pending', 'completed', 'cancelled'],
+    enum: ['pending', 'accepted', 'cancelled'],
     default: 'pending'
   },
   photographerId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User',
     required: true 
+  },
+  packagePrice: {
+    type: Number,
+    default: 0
   }
 });
 

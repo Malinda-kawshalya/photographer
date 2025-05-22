@@ -1,9 +1,58 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PhotographerNavbar from '../../../Components/PhotographerNavbar/PhotographerNavbar'
 import Footer from '../../../Components/Footer/Footer'
 import Bgvideo from '../../../Components/background/Bgvideo'
+import axios from 'axios'
 
 function Earning() {
+  const [totalEarnings, setTotalEarnings] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Authentication required');
+        }
+
+        // Fetch all bookings
+        const response = await axios.get('http://localhost:5000/api/bookings', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Get the current user's ID
+        const user = JSON.parse(localStorage.getItem('user'));
+        const userId = user?._id;
+        
+        console.log('All bookings:', response.data); // For debugging
+        
+        // Filter bookings for the current photographer and with accepted status
+        const photographerBookings = response.data.bookings 
+          ? response.data.bookings.filter(booking => 
+              booking.photographerId === userId && booking.status === 'accepted')
+          : [];
+          
+        console.log('Photographer bookings:', photographerBookings); // For debugging
+
+        // Calculate total earnings from accepted bookings
+        const totalAmount = photographerBookings
+          .reduce((sum, booking) => sum + (booking.packagePrice || 0), 0);
+
+        setTotalEarnings(totalAmount);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching earnings:', err);
+        setError('Failed to load earnings data');
+        setLoading(false);
+      }
+    };
+
+    fetchEarnings();
+  }, []);
+
   return (
     <div>
         <PhotographerNavbar/>
@@ -18,7 +67,13 @@ function Earning() {
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 '>
                 <div className='glass rounded-lg border border-gray-300 shadow-sm hover:shadow-lg p-6'>
                     <h2 className='text-sm font-medium text-gray-600 mb-1'>Total Earnings</h2>
-                    <p className='text-3xl  font-bold'>320 000 LKR</p>
+                    {loading ? (
+                      <p className='text-3xl font-bold'>Loading...</p>
+                    ) : error ? (
+                      <p className='text-red-500'>{error}</p>
+                    ) : (
+                      <p className='text-3xl font-bold'>{totalEarnings.toLocaleString()} LKR</p>
+                    )}
                 </div>
 
                 {/* <div className='glass rounded-lg border border-purple-300/30 shadow-sm p-6'>

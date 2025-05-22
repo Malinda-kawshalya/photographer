@@ -23,7 +23,13 @@ const createCompanyProfile = async (req, res) => {
 
     // Validate user
     const user = await User.findById(userId);
-    if (!user || user.role !== 'photographer') {
+    if (!user) {
+      await cleanupFiles(req.files);
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Check if user role is photographer (being more lenient with the check)
+    if (user.role.toLowerCase() !== 'photographer') {
       await cleanupFiles(req.files);
       return res.status(403).json({ success: false, error: 'Only photographers can create profiles' });
     }

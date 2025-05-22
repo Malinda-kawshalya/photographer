@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import axios from 'axios';
-import RentNavbar from '../../../Components/RentNavbar/RentNavbar';
+import StartChat from '../../../Components/StartChat/StartChat';
 import Bgvideo from '../../../Components/background/Bgvideo';
 import Footer from '../../../Components/Footer/Footer';
+import Navbar from "../../../Components/Navbar/Navbar";
 
 function RentCard() {
   const [products, setProducts] = useState([]);
@@ -114,6 +115,7 @@ function RentCard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
+      <Navbar/>
       <Bgvideo />
       <div className="container mx-auto px-4 py-12 flex-grow">
         {/* Creative Header Section */}
@@ -123,6 +125,11 @@ function RentCard() {
               Camera Rentals
             </span>
           </h2>
+          {products.length > 0 && user?.role === 'client' && (
+            <div className="flex justify-center mt-3 mb-4">
+              <StartChat companyName={products[0].providerName} />
+            </div>
+          )}
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Professional photography gear for rent - capture your moments with premium equipment
           </p>

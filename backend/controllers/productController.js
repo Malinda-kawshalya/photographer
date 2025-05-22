@@ -68,6 +68,11 @@ const getProducts = async (req, res) => {
     }
 
     const products = await Product.find(query).populate('userId', 'username companyName');
+    
+    if (!products || products.length === 0) {
+      return res.json({ success: true, products: [], message: 'No products found' });
+    }
+    
     res.json({ success: true, products });
   } catch (error) {
     console.error('Error fetching products:', error);

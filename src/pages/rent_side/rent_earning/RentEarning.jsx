@@ -1,9 +1,67 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Footer from '../../../Components/Footer/Footer'
 import Bgvideo from '../../../Components/background/Bgvideo'
 import RentNavbar from '../../../Components/RentNavbar/RentNavbar'
+import axios from 'axios'
 
 function RentEarning() {
+  const [totalEarnings, setTotalEarnings] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Authentication required');
+        }
+
+        // Fetch all rental transactions
+        const response = await axios.get('http://localhost:5000/api/rental-transactions', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        console.log('Rental transactions response:', response.data);
+
+        // Calculate total earnings from completed rentals
+        const rentals = response.data.rentals || [];
+        console.log('Filtered rentals:', rentals);
+        
+        // Get the current user ID to filter rentals
+        const user = JSON.parse(localStorage.getItem('user'));
+        const userId = user?._id;
+        
+        // Filter rentals that belong to the current user and have 'accepted' status
+        const userRentals = rentals.filter(rental => 
+          rental.rentalProviderId?._id === userId || 
+          rental.rentalProviderId === userId
+        );
+        
+        console.log('User ID:', userId);
+        console.log('User rentals:', userRentals);
+        
+        // Calculate total from accepted rentals
+        const acceptedRentals = userRentals.filter(rental => rental.status === 'accepted');
+        const totalAmount = acceptedRentals.reduce((sum, rental) => {
+          // Check if price is in productDetails (as per your updated schema)
+          const price = rental.productDetails?.price || rental.price || 0;
+          return sum + price;
+        }, 0);
+
+        setTotalEarnings(totalAmount);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching earnings:', err);
+        setError('Failed to load earnings data');
+        setLoading(false);
+      }
+    };
+
+    fetchEarnings();
+  }, []);
+
   return (
     <div>
         <RentNavbar/>
@@ -18,7 +76,13 @@ function RentEarning() {
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 '>
                 <div className='glass rounded-lg border border-gray-300 shadow-sm hover:shadow-lg p-6'>
                     <h2 className='text-sm font-medium text-gray-600 mb-1'>Total Earnings</h2>
-                    <p className='text-3xl  font-bold'>320 000 LKR</p>
+                    {loading ? (
+                      <p className='text-3xl font-bold'>Loading...</p>
+                    ) : error ? (
+                      <p className='text-red-500'>{error}</p>
+                    ) : (
+                      <p className='text-3xl font-bold'>{totalEarnings.toLocaleString()} LKR</p>
+                    )}
                 </div>
 
                 {/* <div className='glass rounded-lg border border-purple-300/30 shadow-sm p-6'>
@@ -51,12 +115,8 @@ function RentEarning() {
             </div> */}
 
         </div>
-        <Footer/>;
+        <Footer/>
     </div>
   ) 
 }
-
-
-
-
 export default RentEarning

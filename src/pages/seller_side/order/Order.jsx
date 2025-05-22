@@ -37,6 +37,12 @@ function Order() {
 
   const handleStatusChange = async (id, status) => {
     try {
+      // Find the booking to get customer details for email notification
+      const bookingToUpdate = bookings.find(booking => booking._id === id);
+      if (!bookingToUpdate) {
+        throw new Error('Booking not found');
+      }
+
       const response = await fetch(`http://localhost:5000/api/bookings/${id}`, {
         method: 'PATCH',
         headers: {
@@ -52,8 +58,64 @@ function Order() {
       setBookings(bookings.map(booking => 
         booking._id === id ? { ...booking, status } : booking
       ));
+
+      // Send notification if status is changed to 'accepted'
+      if (status === 'accepted') {
+        // Log status change for debugging
+        console.log(`Booking status changed to 'accepted' for booking ${id}`);
+        console.log(`Booking details:`, bookingToUpdate);
+        
+        const customerEmail = bookingToUpdate.email;
+        
+        // Only attempt to send email if we have a customer email
+        if (customerEmail) {
+          try {
+            console.log(`Attempting to send booking acceptance notification to: ${customerEmail}`);
+            
+            const emailResponse = await fetch('http://localhost:5000/api/send-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: customerEmail,
+                name: bookingToUpdate.fullName || 'Valued Customer',
+                eventType: bookingToUpdate.eventType,
+                eventDate: bookingToUpdate.eventDate,
+                venueName: `Photographer: ${user?.companyName || user?.username || 'Your Photographer'}`
+              })
+            });
+            
+            // Get full response details for debugging
+            let responseText;
+            try {
+              responseText = await emailResponse.text();
+            } catch (e) {
+              responseText = 'Could not read response text';
+            }
+            
+            if (emailResponse.ok) {
+              console.log('Booking acceptance email sent successfully');
+            } else {
+              console.error(`Failed to send booking acceptance email. Status: ${emailResponse.status}`);
+              console.error(`Response: ${responseText}`);
+              
+              // Show fallback notification for photographer
+              alert(`Email notification could not be sent. Please notify the client directly.\n\nStatus: Accepted\nClient: ${customerEmail}\nEvent: ${bookingToUpdate.eventType} on ${new Date(bookingToUpdate.eventDate).toLocaleDateString()}`);
+            }
+          } catch (emailError) {
+            console.error('Error sending booking acceptance email:', emailError);
+            // Show more debugging info
+            alert(`Email notification failed. Email configuration may be incorrect.\n\nError: ${emailError.message}`);
+          }
+        } else {
+          console.log('No client email available - skipping email notification');
+          alert(`Booking accepted\n\nNo client email available to send notification.`);
+        }
+      }
     } catch (error) {
       console.error('Error updating booking status:', error);
+      alert(error.message || 'Error updating booking status');
     }
   };
 
@@ -74,8 +136,8 @@ function Order() {
       <Bgvideo/>
       <div className='flex-grow container mx-auto px-6 py-8 bg-white'>
         <div className='mb-8'>
-          <h1 className='text-transparent bg-clip-text  bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-3xl font-bold'>Your Orders</h1>
-          <p className='text-gray-400 mt-2'>Manage and track all your orders</p>
+          <h1 className='text-transparent bg-clip-text  bg-gradient-to-r from-[#850FFD] to-[#DF10FD] text-3xl font-bold'>Your Bookings</h1>
+          <p className='text-gray-400 mt-2'>Manage and track all your bookings</p>
         </div>
 
         <div className='glass rounded-lg border border-gray-300 shadow-sm hover:shadow-lg overflow-hidden'>
@@ -108,7 +170,7 @@ function Order() {
                     <div>
                       <span className="font-medium text-black">Status: </span>
                       <span className={`font-semibold ${
-                        booking.status === 'completed' ? 'text-green-600' : 
+                        booking.status === 'accepted' ? 'text-green-600' : 
                         booking.status === 'cancelled' ? 'text-red-600' : 'text-yellow-400'
                       }`}>
                         {booking.status || 'pending'}
@@ -120,10 +182,10 @@ function Order() {
                   {(!booking.status || booking.status === 'pending') && (
                     <div className="mt-6 flex space-x-3">
                       <button
-                        onClick={() => handleStatusChange(booking._id, 'completed')}
+                        onClick={() => handleStatusChange(booking._id, 'accepted')}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
                       >
-                        Complete
+                        Accept
                       </button>
                       <button
                         onClick={() => handleStatusChange(booking._id, 'cancelled')}

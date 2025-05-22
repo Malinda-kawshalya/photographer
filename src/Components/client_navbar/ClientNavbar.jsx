@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaBars, FaTimes, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUser, FaSignOutAlt, FaCommentDots } from 'react-icons/fa';
 import { RiUserSettingsFill } from 'react-icons/ri';
 
 function Navbar() {
@@ -94,8 +94,11 @@ function Navbar() {
             <Link to="/Aboutus" className="hover:text-purple-950 text-white transition">
               About Us
             </Link>
-              
-            
+            {user && (
+              <Link to="/chats" className="hover:text-purple-950 text-white transition flex items-center">
+                <FaCommentDots className="mr-1" /> Chats
+              </Link>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -190,6 +193,15 @@ function Navbar() {
               >
                 About Us
               </Link>
+              {user && (
+                <Link
+                  to="/chats"
+                  className="hover:text-purple transition flex items-center"
+                  onClick={toggleMobileMenu}
+                >
+                  <FaCommentDots className="mr-2" /> Chats
+                </Link>
+              )}
               {user && dashboardLink && (
                 <Link
                   to={dashboardLink.path}

@@ -50,6 +50,12 @@ function RentOrder() {
         throw new Error('No authentication token found');
       }
 
+      console.log(`Attempting to update rental ${id} to status: ${status}`);
+      
+      // Store the original status to revert if needed
+      const originalRental = rentals.find(rental => rental._id === id);
+      const originalStatus = originalRental?.status || 'pending';
+      
       // Optimistically update the UI first
       setRentals(prevRentals => 
         prevRentals.map(rental => 
@@ -66,19 +72,94 @@ function RentOrder() {
         body: JSON.stringify({ status })
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+
+      // Handle response based on content type
+      const contentType = response.headers.get('content-type');
+      let responseData;
+      
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+        console.log('Response data:', responseData);
+      } else {
+        const text = await response.text();
+        console.log('Response text:', text);
+        responseData = { message: text };
+      }
 
       if (!response.ok) {
         // Revert the optimistic update if the server request failed
         setRentals(prevRentals => 
           prevRentals.map(rental => 
-            rental._id === id ? { ...rental, status: rental.status } : rental
+            rental._id === id ? { ...rental, status: originalStatus } : rental
           )
         );
-        throw new Error(data.message || 'Failed to update rental status');
+        throw new Error(responseData.error || responseData.message || 'Failed to update rental status');
       }
 
       // No need to update state again since we already did it optimistically
+      console.log('Rental status updated successfully');
+
+      // Send notification if status is changed to 'accepted'
+      if (status === 'accepted') {
+        const rentalToUpdate = rentals.find(rental => rental._id === id);
+        if (rentalToUpdate) {
+          const customerDetails = rentalToUpdate.customerDetails || {};
+          const productDetails = rentalToUpdate.productDetails || {};
+          
+          // Log status change for debugging
+          console.log(`Rental status changed to 'accepted' for rental ${id}`);
+          console.log(`Rental details:`, rentalToUpdate);
+          
+          const customerEmail = customerDetails.email;
+          
+          // Only attempt to send email if we have a customer email
+          if (customerEmail) {
+            try {
+              console.log(`Attempting to send rental acceptance notification to: ${customerEmail}`);
+              
+              const emailResponse = await fetch('http://localhost:5000/api/rental-status', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  to: customerEmail,
+                  name: customerDetails.name || 'Valued Customer',
+                  eventType: `Rental Accepted: ${productDetails.name || 'Rental Product'}`,
+                  eventDate: productDetails.rentDate,
+                  venueName: `Rental Provider: ${user?.companyName || 'Rental Provider'}, Duration: ${productDetails.rentalDuration || '1'} days`
+                })
+              });
+              
+              // Get full response details for debugging
+              let responseText;
+              try {
+                responseText = await emailResponse.text();
+              } catch (e) {
+                responseText = 'Could not read response text';
+              }
+              
+              if (emailResponse.ok) {
+                console.log('Rental acceptance email sent successfully');
+              } else {
+                console.error(`Failed to send rental acceptance email. Status: ${emailResponse.status}`);
+                console.error(`Response: ${responseText}`);
+                
+                // Show fallback notification for rental provider
+                alert(`Email notification could not be sent. Please notify the customer directly.\n\nStatus: Accepted\nCustomer: ${customerEmail}\nProduct: ${productDetails.name || 'Rental Product'}`);
+              }
+            } catch (emailError) {
+              console.error('Error sending rental acceptance email:', emailError);
+              // Show more debugging info
+              alert(`Email notification failed. Email configuration may be incorrect.\n\nError: ${emailError.message}`);
+            }
+          } else {
+            console.log('No customer email available - skipping email notification');
+            alert(`Rental accepted\n\nNo customer email available to send notification.`);
+          }
+        }
+      }
       
     } catch (error) {
       console.error('Error updating rental status:', error);
@@ -111,8 +192,7 @@ function RentOrder() {
   const StatusBadge = ({ status }) => {
     const statusStyles = {
       pending: 'bg-yellow-100 text-yellow-800',
-      active: 'bg-blue-100 text-blue-800',
-      completed: 'bg-green-100 text-green-800',
+      accepted: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800'
     };
 
@@ -198,40 +278,32 @@ function RentOrder() {
 
                   <div className="mt-6 flex space-x-3">
                     {rental.status === 'pending' && (
-                      <button
-                        onClick={() => handleStatusChange(rental._id, 'active')}
-                        disabled={updatingStatus === rental._id}
-                        className={`flex-1 ${
-                          updatingStatus === rental._id 
-                            ? 'bg-blue-400 cursor-not-allowed' 
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        } text-white py-2 px-4 rounded transition-colors flex items-center justify-center`}
-                      >
-                        <span>{updatingStatus === rental._id ? 'Updating...' : 'Activate'}</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleStatusChange(rental._id, 'accepted')}
+                          disabled={updatingStatus === rental._id}
+                          className={`flex-1 ${
+                            updatingStatus === rental._id 
+                              ? 'bg-green-400 cursor-not-allowed' 
+                              : 'bg-green-600 hover:bg-green-700'
+                          } text-white py-2 px-4 rounded transition-colors flex items-center justify-center`}
+                        >
+                          <span>{updatingStatus === rental._id ? 'Updating...' : 'Accept'}</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => handleStatusChange(rental._id, 'cancelled')}
+                          disabled={updatingStatus === rental._id}
+                          className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors flex items-center justify-center"
+                        >
+                          <span>Cancel</span>
+                        </button>
+                      </>
                     )}
                     
-                    {rental.status === 'active' && (
-                      <button
-                        onClick={() => handleStatusChange(rental._id, 'completed')}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors flex items-center justify-center"
-                      >
-                        <span>Complete</span>
-                      </button>
-                    )}
-                    
-                    {(rental.status === 'pending' || rental.status === 'active') && (
-                      <button
-                        onClick={() => handleStatusChange(rental._id, 'cancelled')}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors flex items-center justify-center"
-                      >
-                        <span>Cancel</span>
-                      </button>
-                    )}
-                    
-                    {rental.status === 'completed' && (
+                    {rental.status === 'accepted' && (
                       <div className="flex-1 bg-green-100 text-green-800 py-2 px-4 rounded text-center">
-                        Completed
+                        Accepted
                       </div>
                     )}
                     

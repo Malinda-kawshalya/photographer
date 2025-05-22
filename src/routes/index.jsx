@@ -60,6 +60,10 @@ const router = createBrowserRouter([
     element: <Renters />,
   },
   {
+    path: '/shopcard',
+    element: <ShopCard />,
+  },
+  {
     path: '/portfolio',
     element: <Portfolio />,
   },
@@ -89,10 +93,12 @@ const router = createBrowserRouter([
       { path: '/clientmessage', element: <ClientMessage /> },
       { path: '/payments', element: <Payment /> },
       { path: '/bookingform', element: <BookingForm /> },
+      { path: '/chats', element: <PhotographerChatsPage /> }, // Using the same chat component for clients
       { path: '/chat/:chatId', element: <ChatPage /> },
+      { path: '/chat-room/:chatId', element: <ChatRoom /> }, // Added for client chat rooms
       { path: '/photographer', element: <Photographers /> },
       { path: '/shop', element: <Sellers /> },
-      { path: '/rent', element: <Renters /> },
+      { path: '/rent', element: <Renters /> }
     ],
   },
 
@@ -121,6 +127,8 @@ const router = createBrowserRouter([
       { path: '/rentnotice', element: <RentNotice /> },
       { path: '/rentdetailsform', element: <RentDetailsForm /> },
       { path: '/rentcarddetailsform', element: <RentCardDetailsForm /> },
+      { path: '/add-rental', element: <RentCardDetailsForm /> }, // Added route for adding new rental products
+      { path: '/edit-rental/:productId', element: <RentCardDetailsForm /> }, // Added route for editing rental products
       { path: '/rentabout', element: <RentAbout /> },
     ],
   },
@@ -139,7 +147,6 @@ const router = createBrowserRouter([
       { path: '/shop-card-details/:id', element: <ShopCardDetailsForm /> },
       { path: '/shop-card-details', element: <ShopCardDetailsForm /> },
       { path: '/shopabout', element: <ShopAbout /> },
-      { path: '/shopcard', element: <ShopCard /> },
     ],
   },
 
@@ -159,7 +166,6 @@ const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={['client', 'photographer', 'rental', 'shop', 'admin']} />,
     children: [
       { path: '/profile', element: <Profile /> },
-      { path: '/shopcard', element: <ShopCard /> },
       { path: '/rentcard', element: <RentCard /> },
       // Add a new route for provider-specific rental products
       { path: '/rentcard/:providerId', element: <RentCard /> },

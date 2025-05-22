@@ -69,7 +69,7 @@ function PhotographerNavbar() {
                   Dashboard
                 </Link>
                 <Link to="/order" className="text-white transition hover:text-purple-950">
-                  Orders
+                  Booking
                 </Link>
                 <Link 
                   to={`/portfolio/${user?.companyName}`} 
