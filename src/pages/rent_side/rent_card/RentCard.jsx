@@ -112,6 +112,16 @@ function RentCard() {
 
   console.log('Current user role:', user?.role); // Debug log
   console.log('Products:', products); // Debug log
+  
+  // Enhanced debug logging for the first product
+  if (products.length > 0) {
+    console.log('First product details:', {
+      id: products[0].id,
+      userId: products[0].userId,
+      name: products[0].name,
+      providerId: products[0].providerId
+    });
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
@@ -127,7 +137,36 @@ function RentCard() {
           </h2>
           {products.length > 0 && user?.role === 'client' && (
             <div className="flex justify-center mt-3 mb-4">
-              <StartChat companyName={products[0].providerName} />
+              {(() => {
+                // Extract the raw product data to see the exact structure
+                console.log('Raw product data:', products[0]);
+                
+                // Get providerId from URL parameters
+                const params = new URLSearchParams(location.search);
+                const providerId = params.get('providerId');
+                
+                console.log('Provider ID from URL:', providerId);
+                console.log('Product userId:', products[0].userId);
+                
+                // For debugging, show the product.userId directly
+                const productUserId = products[0].userId;
+                console.log('Provider ID type:', typeof productUserId);
+                
+                // Use the providerId from URL if available, otherwise use the product's userId
+                const rentalId = providerId || products[0].userId;
+                
+                // Ensure we have a valid userId before rendering the chat button
+                if (!rentalId) {
+                  return <p className="text-red-500">Unable to find rental provider ID</p>;
+                }
+                
+                return (
+                  <StartChat 
+                    userId={rentalId}
+                    type="rental" 
+                  />
+                );
+              })()} 
             </div>
           )}
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">

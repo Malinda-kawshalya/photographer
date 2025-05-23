@@ -38,6 +38,9 @@ import ProtectedRoute from '../Components/ProtectedRoute/ProtectedRoute.jsx';
 import StartChat from '../Components/StartChat/StartChat.jsx';
 import ChatPage from '../pages/ChatPage/ChatPage.jsx';
 import PhotographerChatsPage from '../pages/PhotographerChatsPage/PhotographerChatsPage.jsx';
+import ShopChatsPage from '../pages/ShopChatsPage/ShopChatsPage.jsx';
+import ClientChatsPage from '../pages/ClientChatsPage/ClientChatsPage.jsx';
+import RentalChatsPage from '../pages/RentalChatsPage/RentalChatsPage.jsx';
 import AdminDashboard from '../pages/AdminDashboard/AdminDashboard.jsx';
 import ChatRoom from '../pages/ChatRoom/ChatRoom.jsx';
 
@@ -93,9 +96,9 @@ const router = createBrowserRouter([
       { path: '/clientmessage', element: <ClientMessage /> },
       { path: '/payments', element: <Payment /> },
       { path: '/bookingform', element: <BookingForm /> },
-      { path: '/chats', element: <PhotographerChatsPage /> }, // Using the same chat component for clients
+      { path: '/chats', element: <ClientChatsPage /> },
       { path: '/chat/:chatId', element: <ChatPage /> },
-      { path: '/chat-room/:chatId', element: <ChatRoom /> }, // Added for client chat rooms
+      { path: '/chats/chat-room/:chatId', element: <ChatRoom /> }, // Added for client chat rooms
       { path: '/photographer', element: <Photographers /> },
       { path: '/shop', element: <Sellers /> },
       { path: '/rent', element: <Renters /> }
@@ -107,8 +110,8 @@ const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={['photographer']} />,
     children: [
       { path: '/dashboard', element: <Dashboard /> },
-      { path: '/chats', element: <PhotographerChatsPage /> },
-      { path: '/chat-room/:chatId', element: <ChatRoom /> },
+      { path: '/photographerchats', element: <PhotographerChatsPage /> },
+      { path: '/photographerchats/chat-room/:chatId', element: <ChatRoom /> },
       { path: '/order', element: <Order /> },
       { path: '/notice', element: <Notice /> },
       { path: '/earning', element: <Earning /> },
@@ -125,6 +128,8 @@ const router = createBrowserRouter([
       { path: '/rentorder', element: <RentOrder /> },
       { path: '/rentearning', element: <RentEarning /> },
       { path: '/rentnotice', element: <RentNotice /> },
+      { path: '/rental-chats', element: <RentalChatsPage /> }, // Added rental chats page
+      { path: '/rental-chats/chat-room/:chatId', element: <ChatRoom /> }, // Added for rental chat rooms
       { path: '/rentdetailsform', element: <RentDetailsForm /> },
       { path: '/rentcarddetailsform', element: <RentCardDetailsForm /> },
       { path: '/add-rental', element: <RentCardDetailsForm /> }, // Added route for adding new rental products
@@ -141,6 +146,8 @@ const router = createBrowserRouter([
       { path: '/shoporder', element: <ShopOrder /> },
       { path: '/shopearning', element: <ShopEarning /> },
       { path: '/shopnotice', element: <ShopNotice /> },
+      { path: '/shop-chats', element: <ShopChatsPage /> }, // Added shop chats page
+      { path: '/shop-chats/chat-room/:chatId', element: <ChatRoom /> }, // Added for shop chat rooms
       { path: '/shopcarddetailsform', element: <ShopCardDetailsForm /> },
       { path: '/shopcarddetailsform/:id', element: <ShopCardDetailsForm /> }, // Add this route
       // Update these routes for editing products
@@ -170,7 +177,8 @@ const router = createBrowserRouter([
       // Add a new route for provider-specific rental products
       { path: '/rentcard/:providerId', element: <RentCard /> },
       { path: '/portfolio/:companyName', element: <Portfolio /> },
-
+      // Add shared chat room route accessible to all user roles
+      { path: '/chat-room/:chatId', element: <ChatRoom /> },
 
     ],
   },

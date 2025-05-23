@@ -60,7 +60,6 @@ function Navbar() {
         return { path: '/shopdashboard', label: 'Shop Dashboard' };
       case 'rental':
         return { path: '/rentdashboard', label: 'Rent Dashboard' };
-      
       default:
         return null;
     }
@@ -94,16 +93,11 @@ function Navbar() {
             <Link to="/Aboutus" className="hover:text-purple-950 text-white transition">
               About Us
             </Link>
-            {user && (
-              <Link to="/chats" className="hover:text-purple-950 text-white transition flex items-center">
-                <FaCommentDots className="mr-1" /> Chats
-              </Link>
-            )}
           </nav>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white focus:outline-none"
+            className="text-white md:hidden focus:outline-none"
             onClick={toggleMobileMenu}
           >
             {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
@@ -112,7 +106,16 @@ function Navbar() {
           {/* Desktop Auth/Settings */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <div className="relative">
+              <div className="relative flex items-center space-x-4">
+                {/* Chat Icon for Desktop */}
+                <Link
+                  to="/chats"
+                  className="flex items-center transition hover:text-purple-950"
+                  title="Chats"
+                >
+                  <FaCommentDots className="w-5 h-5 text-white transition cursor-pointer hover:text-purple-950" />
+                </Link>
+                {/* Settings Dropdown */}
                 <button
                   onClick={toggleSettingsDropdown}
                   className="flex items-center transition hover:text-purple-950"
@@ -128,6 +131,15 @@ function Navbar() {
                     >
                       <FaUser className="mr-2" /> Profile
                     </Link>
+                    {dashboardLink && (
+                      <Link
+                        to={dashboardLink.path}
+                        className="flex items-center w-full px-4 py-2 text-sm text-left hover:bg-gray-200"
+                        onClick={() => setIsSettingsDropdownOpen(false)}
+                      >
+                        {dashboardLink.label}
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="flex items-center w-full px-4 py-2 text-sm text-left hover:bg-gray-200"

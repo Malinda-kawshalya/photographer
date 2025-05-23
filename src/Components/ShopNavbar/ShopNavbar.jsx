@@ -74,6 +74,12 @@ function ShopNavbar() {
 
           {/* Desktop Icons */}
           <div className="hidden md:flex items-center space-x-4">
+            {user && (
+              <Link to="/shop-chats" className="relative text-white transition hover:text-purple-950">
+                <FaMessage size={20} />
+                {/* You can add a notification counter for unread messages here */}
+              </Link>
+            )}
             
             <div className="relative text-white transition hover:text-purple-950">
               <FaBell size={20} />
@@ -116,6 +122,11 @@ function ShopNavbar() {
               <Link to="/shoporder" className="hover:text-purple transition" onClick={toggleMobileMenu}>Orders</Link>
               <Link to="/shopcard" className="hover:text-purple transition" onClick={toggleMobileMenu}>Shop Card</Link>
               <Link to="/shopearning" className="hover:text-purple transition" onClick={toggleMobileMenu}>Earnings</Link>
+              <Link to="/shop-chats" className="hover:text-purple transition" onClick={toggleMobileMenu}>
+                <div className="flex items-center">
+                  <FaMessage className="mr-2" /> Messages
+                </div>
+              </Link>
               <Link to="/shopnotice" className="hover:text-purple transition" onClick={toggleMobileMenu}>Notice</Link>
               <Link to="/shopabout" className="hover:text-purple transition" onClick={toggleMobileMenu}>About Us</Link>
             </nav>

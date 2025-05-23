@@ -14,12 +14,12 @@ function PhotographerChatsPage() {
     const fetchChats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/chats', {
+        const response = await axios.get('http://localhost:5000/api/chats/photographer', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.data.success) {
-          console.log('Fetched chats:', response.data.chats); // For debugging
+          console.log('Fetched chats:', response.data.chats);
           setChats(response.data.chats);
         } else {
           setError(response.data.error || 'No chats found');
@@ -54,12 +54,12 @@ function PhotographerChatsPage() {
               to={`/chat-room/${chat._id}`}
               key={chat._id}
               className="block border rounded-lg p-4 hover:bg-gray-50 transition"
+              onClick={() => console.log('Navigating to chat:', chat._id)} // Debug log
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <FaUser className="text-purple-500" />
                   <div>
-
                     <p className="text-sm text-gray-500">
                       {chat.clientId?.email || 'No email available'}
                     </p>

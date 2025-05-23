@@ -74,7 +74,7 @@ function RentNavbar() {
 
           {/* Desktop Icons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/message" className="text-white transition hover:text-purple-950">
+            <Link to="/rental-chats" className="text-white transition hover:text-purple-950">
               <FaMessage size={20} />
             </Link>
             <div className="relative text-white transition hover:text-purple-950">
@@ -117,6 +117,7 @@ function RentNavbar() {
               <Link to="/rentdashboard" className="hover:text-purple transition" onClick={toggleMobileMenu}>Dashboard</Link>
               <Link to="/rentorder" className="hover:text-purple transition" onClick={toggleMobileMenu}>Orders</Link>
               <Link to="/rentcard" className="hover:text-purple transition" onClick={toggleMobileMenu}>Rent Card</Link>
+              <Link to="/rental-chats" className="hover:text-purple transition" onClick={toggleMobileMenu}>Client Chats</Link>
               <Link to="/rentearning" className="hover:text-purple transition" onClick={toggleMobileMenu}>Earnings</Link>
               <Link to="/rentnotice" className="hover:text-purple transition" onClick={toggleMobileMenu}>Notice</Link>
               <Link to="/rentabout" className="hover:text-purple transition" onClick={toggleMobileMenu}>About Us</Link>

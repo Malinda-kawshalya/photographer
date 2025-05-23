@@ -15,7 +15,6 @@ function PhotographerNavbar() {
     const loggedInUser = JSON.parse(localStorage.getItem('user'));
     if (loggedInUser) {
       if (!loggedInUser.companyName && loggedInUser.role === 'photographer') {
-        // If photographer hasn't set up their profile, redirect to form
         navigate('/Portfoliodetailsform');
       }
       setUser(loggedInUser);
@@ -49,7 +48,6 @@ function PhotographerNavbar() {
     setIsNoticeDropdownOpen(!isNoticeDropdownOpen);
   };
 
-  // Only render photographer-specific links if user is a photographer
   const isPhotographer = user?.role === 'photographer';
 
   return (
@@ -61,7 +59,6 @@ function PhotographerNavbar() {
             <div className="text-xl font-bold text-white">PHOTOGRAPHER.LK [Studio]</div>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="items-center hidden space-x-6 md:flex">
             {isPhotographer && (
               <>
@@ -71,8 +68,8 @@ function PhotographerNavbar() {
                 <Link to="/order" className="text-white transition hover:text-purple-950">
                   Booking
                 </Link>
-                <Link 
-                  to={`/portfolio/${user?.companyName}`} 
+                <Link
+                  to={`/portfolio/${user?.companyName}`}
                   className="text-white transition hover:text-purple-950"
                 >
                   Portfolio
@@ -90,7 +87,6 @@ function PhotographerNavbar() {
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
           <button
             className="text-white md:hidden focus:outline-none"
             onClick={toggleMobileMenu}
@@ -98,9 +94,8 @@ function PhotographerNavbar() {
             {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
           </button>
 
-          {/* Desktop Icons */}
           <div className="items-center hidden space-x-6 md:flex">
-            <Link to="/chats" className="text-white transition hover:text-purple-950">
+            <Link to="/photographerchats" className="text-white transition hover:text-purple-950">
               <FaMessage size={20} />
             </Link>
 
@@ -111,7 +106,6 @@ function PhotographerNavbar() {
               </span>
             </button>
 
-            {/* Notice Link with Dropdown */}
             <div className="relative">
               <button
                 onClick={toggleNoticeDropdown}
@@ -152,7 +146,6 @@ function PhotographerNavbar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="px-6 py-4 bg-white shadow-md md:hidden">
             <nav className="flex flex-col space-y-4">
@@ -203,7 +196,6 @@ function PhotographerNavbar() {
                 </>
               )}
 
-              {/* Notice Dropdown in Mobile */}
               <div className="flex flex-col space-y-2">
                 <button
                   onClick={() => setIsNoticeDropdownOpen(!isNoticeDropdownOpen)}

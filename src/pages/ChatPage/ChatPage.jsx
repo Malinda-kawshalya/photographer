@@ -58,11 +58,24 @@ function ChatPage() {
 
     try {
       const token = localStorage.getItem('token');
+      
+      // Determine the correct sender based on user role
+      let sender;
+      if (user?.role === 'photographer') {
+        sender = 'photographer';
+      } else if (user?.role === 'shop') {
+        sender = 'shop';
+      } else {
+        sender = 'client';
+      }
+      
+      console.log('Sending message as:', sender, 'User role:', user?.role, 'Chat type:', chat?.type);
+      
       const response = await axios.post(
         `http://localhost:5000/api/chats/${chatId}/messages`,
         {
           content: newMessage,
-          sender: user?.role === 'photographer' ? 'photographer' : 'client',
+          sender: sender
         },
         {
           headers: { Authorization: `Bearer ${token}` },

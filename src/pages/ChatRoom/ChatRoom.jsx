@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import PhotographerNavbar from '../../Components/PhotographerNavbar/PhotographerNavbar';
+import ShopNavbar from '../../Components/ShopNavbar/ShopNavbar';
+import ClientNavbar from '../../Components/client_navbar/ClientNavbar';
+import RentNavbar from '../../Components/RentNavbar/RentNavbar';
 import Bgvideo from '../../Components/background/Bgvideo';
 import { FaUser, FaPaperPlane } from 'react-icons/fa';
 
 function ChatRoom() {
   const { chatId } = useParams();
+  const navigate = useNavigate();
   const [chat, setChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -59,37 +63,83 @@ function ChatRoom() {
 
     try {
       const token = localStorage.getItem('token');
+      let senderType = 'client'; // Default sender type
+
+      // Determine the correct sender type based on user role and chat type
+      if (user) {
+        if (user.role === 'photographer' && chat.type === 'photographer') {
+          senderType = 'photographer';
+        } else if (user.role === 'shop' && chat.type === 'shop') {
+          senderType = 'shop';
+        } else if (user.role === 'rental' && chat.type === 'rental') {
+          senderType = 'rental';
+          console.log('Setting sender type as rental for rental service provider');
+        } else if (user.role === 'client') {
+          senderType = 'client';
+        }
+      }
+      
+      // Enhanced logging for troubleshooting
+      console.log('User role:', user?.role);
+      console.log('Chat type:', chat?.type);
+
+      console.log('Sending message as:', senderType, 'Chat type:', chat.type);
+
       const response = await axios.post(
         `http://localhost:5000/api/chats/${chatId}/messages`,
         {
           content: newMessage,
-          sender: 'photographer' // Since this is ChatRoom for photographer
+          sender: senderType,
         },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response.data.success) {
-        // Update messages state with the new message
-        setMessages(prevMessages => [...prevMessages, response.data.message]);
+        // Update messages locally
+        setMessages([...messages, response.data.message]);
         setNewMessage('');
-        scrollToBottom();
+
+        // Scroll to the bottom after sending a message
+        setTimeout(() => {
+          const messagesDiv = document.getElementById('messages');
+          if (messagesDiv) {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          }
+        }, 100);
       }
-    } catch (err) {
-      console.error('Error sending message:', err);
-      setError(err.response?.data?.message || 'Failed to send message');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setError('Failed to send message');
     }
   };
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
 
+  // Render appropriate navbar based on user role
+  const renderNavbar = () => {
+    if (!user) return <ClientNavbar />;
+    
+    switch (user.role) {
+      case 'photographer':
+        return <PhotographerNavbar />;
+      case 'shop':
+        return <ShopNavbar />;
+      case 'rental':
+        return <RentNavbar />;
+      case 'client':
+        return <ClientNavbar />;
+      default:
+        return <ClientNavbar />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
-      <PhotographerNavbar />
+      {renderNavbar()}
       <Bgvideo />
       <div className="max-w-4xl mx-auto p-4 mt-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -102,12 +152,20 @@ function ChatRoom() {
               <div
                 key={index}
                 className={`flex mb-4 ${
-                  message.sender === 'photographer' ? 'justify-end' : 'justify-start'
+                  (message.sender === 'photographer' && user?.role === 'photographer') || 
+                  (message.sender === 'shop' && user?.role === 'shop') || 
+                  (message.sender === 'rental' && user?.role === 'rental') || 
+                  (message.sender === 'client' && user?.role === 'client')
+                    ? 'justify-end' 
+                    : 'justify-start'
                 }`}
               >
                 <div
                   className={`max-w-[70%] p-3 rounded-lg ${
-                    message.sender === 'photographer'
+                    (message.sender === 'photographer' && user?.role === 'photographer') ||
+                    (message.sender === 'shop' && user?.role === 'shop') ||
+                    (message.sender === 'rental' && user?.role === 'rental') ||
+                    (message.sender === 'client' && user?.role === 'client')
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-200'
                   }`}
