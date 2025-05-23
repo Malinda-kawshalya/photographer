@@ -119,9 +119,10 @@ function ShopOrder() {
             body: JSON.stringify({
               to: customerEmail,
               name: billingDetails.username || 'Valued Customer',
-              eventType: `Order ${status}: ${orderToUpdate.productName}`,
-              eventDate: orderToUpdate.orderDate,
-              venueName: `Shop: ${orderToUpdate.shopName}`
+              productName: orderToUpdate.productName || 'Product',
+              orderStatus: status,
+              orderDate: orderToUpdate.orderDate,
+              shopName: orderToUpdate.shopName || user?.companyName || 'Shop'
             })
           });
 

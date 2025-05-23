@@ -121,9 +121,9 @@ const RentDetailsForm = () => {
           quantity: parseInt(formData.productDetails.quantity),
           rentDate: startDate.toISOString(),
           rentalDuration: parseInt(formData.productDetails.rentalDuration),
-          price: parseFloat(formData.price),
           endDate: endDate.toISOString()
         },
+        price: parseFloat(formData.price) // Move price to root level
       };
 
       // API call

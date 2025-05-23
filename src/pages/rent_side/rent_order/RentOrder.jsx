@@ -126,9 +126,11 @@ function RentOrder() {
                 body: JSON.stringify({
                   to: customerEmail,
                   name: customerDetails.name || 'Valued Customer',
-                  eventType: `Rental Accepted: ${productDetails.name || 'Rental Product'}`,
-                  eventDate: productDetails.rentDate,
-                  venueName: `Rental Provider: ${user?.companyName || 'Rental Provider'}, Duration: ${productDetails.rentalDuration || '1'} days`
+                  productName: productDetails.name || 'Rental Product',
+                  status: 'accepted',
+                  rentDate: productDetails.rentDate,
+                  rentalDuration: productDetails.rentalDuration || '1',
+                  rentalProvider: user?.companyName || 'Rental Provider'
                 })
               });
               

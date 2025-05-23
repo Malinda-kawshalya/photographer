@@ -57,14 +57,15 @@ const createRental = async (req, res) => {
     // Validate numeric fields
     const quantity = parseInt(rentalData.productDetails.quantity);
     const rentalDuration = parseInt(rentalData.productDetails.rentalDuration);
-    const price = parseFloat(rentalData.productDetails.price);
     
-    // Handle price explicitly
+    // Handle price correctly - it should be at the root level
+    let price;
     if (rentalData.price !== undefined) {
       price = parseFloat(rentalData.price);
-      console.log('Price from request:', rentalData.price, 'Parsed price:', price);
+      console.log('Price from request root:', rentalData.price, 'Parsed price:', price);
     } else {
       console.log('Price is undefined in request');
+      return res.status(400).json({ error: 'Price is required' });
     }
 
     if (isNaN(quantity) || quantity < 1) {
